@@ -1,4 +1,4 @@
-# Digitizer
+# Digitize
 
 Storing paper documents is annoying. Even with online billing and communications there are still some things that end up being received in hardcopy. This is a web front end that allows for quickly creating digital copies of those paper docs.
 
