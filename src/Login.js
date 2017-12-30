@@ -6,7 +6,7 @@ class Login extends Component {
   render() {
 
     const dbx = new Dropbox({ clientId: 'ebbf5ibg99u8ytt' });
-    const authUrl = dbx.getAuthenticationUrl('http://localhost:3000/upload');
+    const authUrl = dbx.getAuthenticationUrl(`${window.location.origin}/upload`);
 
     return (
       <div className="Login">
