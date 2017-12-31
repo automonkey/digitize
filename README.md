@@ -53,7 +53,20 @@ AWS_ACCESS_KEY_ID=<your_access_key_id> AWS_SECRET_ACCESS_KEY=<your-access-key> t
 
 For all deploy jobs the environment variable `ENV` is used to determine where to deploy to (which AWS resources are created/replaced/deleted).
 
-### Update infra
+### Step 1: Generate SSL Cert
+
+Requests SSL cert from certificate authority and uploads to AWS.
+
+```bash
+[AWS_PROFILE=profile-name] [ENV=dev|prod] [GANDI_API_KEY=key] [GANDI_DNS_ZONE_ID=id] ./generate-ssl-cert.sh
+```
+
+GANDI\_API\_KEY: API Key for Gandi LiveDNS (authoritative name server).
+GANDI\_DNS\_ZONE\_ID: Id for zone containing digitize.benyon.io DNS zone entries.
+
+### Step 2: Update infra
+
+Requires SSL cert has been generated using above step.
 
 Creates (and maintains) the AWS S3 bucket and infra required to host site.
 
@@ -61,7 +74,7 @@ Creates (and maintains) the AWS S3 bucket and infra required to host site.
 [AWS_PROFILE=profile-name] [ENV=dev|prod] ./deploy-infra.sh
 ```
 
-### Deploy app
+### Step 3: Deploy app
 
 Creates a production build and uploads to S3 bucket.
 

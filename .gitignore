@@ -22,3 +22,5 @@ yarn-error.log*
 
 /.terraform/
 *.tfstate*
+
+/ssl_cert_generation_files/
