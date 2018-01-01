@@ -8,4 +8,4 @@ ansible-playbook -c local \
   -e env="'${ENV}'" \
   -e gandi_api_key="'${GANDI_API_KEY}'" \
   -e gandi_dns_zone_id="'${GANDI_DNS_ZONE_ID}'" \
-  generate-ssl-cert.yml
+  build-scripts/generate-ssl-cert.yml

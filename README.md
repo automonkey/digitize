@@ -38,7 +38,7 @@ Note, all commands support the AWS_PROFILE environment variable. It is encourage
 The project uses an S3 backend to store the terraform state. To create the bucket required for this, execute:
 
 ```bash
-[AWS_PROFILE=profile-name] ./bootstap-infra.sh
+[AWS_PROFILE=profile-name] ./build-scripts/bootstap-infra.sh
 ```
 
 Requires [awscli](https://aws.amazon.com/cli/) to be installed.
@@ -58,7 +58,7 @@ For all deploy jobs the environment variable `ENV` is used to determine where to
 Requests SSL cert from certificate authority and uploads to AWS.
 
 ```bash
-[AWS_PROFILE=profile-name] [ENV=dev|prod] [GANDI_API_KEY=key] [GANDI_DNS_ZONE_ID=id] ./generate-ssl-cert.sh
+[AWS_PROFILE=profile-name] [ENV=dev|prod] [GANDI_API_KEY=key] [GANDI_DNS_ZONE_ID=id] ./build-scripts/generate-ssl-cert.sh
 ```
 
 GANDI\_API\_KEY: API Key for Gandi LiveDNS (authoritative name server).
@@ -71,7 +71,7 @@ Requires SSL cert has been generated using above step.
 Creates (and maintains) the AWS S3 bucket and infra required to host site.
 
 ```bash
-[AWS_PROFILE=profile-name] [ENV=dev|prod] ./deploy-infra.sh
+[AWS_PROFILE=profile-name] [ENV=dev|prod] ./build-scripts/deploy-infra.sh
 ```
 
 ### Step 3: Deploy app
@@ -79,5 +79,5 @@ Creates (and maintains) the AWS S3 bucket and infra required to host site.
 Creates a production build and uploads to S3 bucket.
 
 ```bash
-[AWS_PROFILE=profile-name] [ENV=dev|prod] ./deploy-app.sh
+[AWS_PROFILE=profile-name] [ENV=dev|prod] ./build-scripts/deploy-app.sh
 ```
