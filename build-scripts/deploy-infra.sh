@@ -18,7 +18,10 @@ fi
 
 LATEST_SSL_CERT=$(aws ssm get-parameter --name digitize-$ENV-latest-ssl-cert --query 'Parameter.Value' --output text)
 
-terraform env select $TERRAFORM_ENV
-terraform apply \
-    -var "environment=$ENV" \
-    -var "latest_ssl_cert_arn=$LATEST_SSL_CERT"
+(
+    cd infra
+    terraform env select $TERRAFORM_ENV
+    terraform apply \
+        -var "environment=$ENV" \
+        -var "latest_ssl_cert_arn=$LATEST_SSL_CERT"
+)
