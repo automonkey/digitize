@@ -16,7 +16,7 @@ else
     exit 1
 fi
 
-LATEST_SSL_CERT=$(aws ssm get-parameter --name digitize-$ENV-latest-ssl-cert --query 'Parameter.Value' --output text)
+LATEST_SSL_CERT=$(aws ssm get-parameter --region eu-west-2 --name digitize-$ENV-latest-ssl-cert --query 'Parameter.Value' --output text)
 
 (
     cd infra
