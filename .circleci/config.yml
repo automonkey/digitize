@@ -1,0 +1,90 @@
+version: 2
+
+jobs:
+
+  test:
+    docker:
+      - image: buildpack-deps:trusty
+    steps:
+      - checkout
+      - run:
+          name: CI Setup
+          command: ./build-scripts/ci-setup-test.sh
+      - run:
+          name: Tests
+          command: ./build-scripts/test-app.sh
+
+  deploy-infra: &DEPLOY_INFRA
+    docker:
+      - image: buildpack-deps:trusty
+    steps:
+      - checkout
+      - run:
+          name: CI Setup
+          command: ./build-scripts/ci-setup-deploy-infra.sh
+      - run:
+          name: Deploy Infra
+          command: ./build-scripts/deploy-infra.sh
+
+  deploy-app: &DEPLOY_APP
+    docker:
+      - image: buildpack-deps:trusty
+    steps:
+      - checkout
+      - run:
+          name: CI Setup
+          command: ./build-scripts/ci-setup-deploy-app.sh
+      - run:
+          name: Deploy app
+          command: ./build-scripts/deploy-app.sh
+
+  deploy-infra-dev:
+    <<: *DEPLOY_INFRA
+    environment:
+      ENV: dev
+
+  deploy-app-dev:
+    <<: *DEPLOY_APP
+    environment:
+      ENV: dev
+
+  deploy-infra-prod:
+    <<: *DEPLOY_INFRA
+    environment:
+      ENV: prod
+
+  deploy-app-prod:
+    <<: *DEPLOY_APP
+    environment:
+      ENV: prod
+
+workflows:
+  version: 2
+  deploy:
+    jobs:
+
+      - test:
+          filters:
+            branches:
+              only: master
+
+      - deploy-infra-dev:
+          requires:
+            - test
+
+      - deploy-app-dev:
+          requires:
+            - deploy-infra-dev
+
+      - prod-authorization:
+          type: approval
+          requires:
+            - deploy-app-dev
+
+      - deploy-infra-prod:
+          requires:
+            - prod-authorization
+
+      - deploy-app-prod:
+          requires:
+            - deploy-infra-prod

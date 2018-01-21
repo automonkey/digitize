@@ -20,6 +20,7 @@ LATEST_SSL_CERT=$(aws ssm get-parameter --region eu-west-2 --name digitize-$ENV-
 
 (
     cd infra
+    terraform init
     terraform env select $TERRAFORM_ENV
     terraform apply \
         -var "environment=$ENV" \

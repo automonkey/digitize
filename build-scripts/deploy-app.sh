@@ -16,6 +16,8 @@ AWS_DEPLOYMENT_BUCKET=www.${ENV_URL_PART}digitize.benyon.io
 
 (
     cd app
+    nvm install
+    npm install
     npm run build
     aws s3 sync build s3://$AWS_DEPLOYMENT_BUCKET --delete
 )
