@@ -7,7 +7,9 @@
     gandi_dns_zone_id: ""
     fqdn: "www.{{ (env != 'prod') | ternary(env + '.','') }}digitize.benyon.io"
     dir: "{{ lookup('env','PWD') }}"
-    acme_url: "https://acme-v01.api.letsencrypt.org/directory"
+    acme_url_prod: "https://acme-v01.api.letsencrypt.org/directory"
+    acme_url_staging: "https://acme-staging.api.letsencrypt.org/directory"
+    acme_url: "{{ acme_url_prod }}"
     cert_generation_files_dir: "{{ dir }}/ssl_cert_generation_files"
   tasks:
     - name: assert required variables exist
@@ -123,4 +125,5 @@
         --description "The latest generated cert for {{ fqdn }}"
         --type String
         --value "{{ acm_cert_import.stdout }}"
+        --region eu-west-2
         --overwrite

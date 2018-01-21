@@ -38,6 +38,18 @@ jobs:
           name: Deploy app
           command: ./build-scripts/deploy-app.sh
 
+  generate-ssl-cert: &GENERATE_SSL_CERT
+    docker:
+      - image: buildpack-deps:trusty
+    steps:
+      - checkout
+      - run:
+          name: CI Setup
+          command: ./build-scripts/ci-setup-cert-gen.sh
+      - run:
+          name: Generate cert
+          command: ./build-scripts/generate-ssl-cert.sh
+
   deploy-infra-dev:
     <<: *DEPLOY_INFRA
     environment:
@@ -55,6 +67,16 @@ jobs:
 
   deploy-app-prod:
     <<: *DEPLOY_APP
+    environment:
+      ENV: prod
+
+  cert-dev:
+    <<: *GENERATE_SSL_CERT
+    environment:
+      ENV: dev
+
+  cert-prod:
+    <<: *GENERATE_SSL_CERT
     environment:
       ENV: prod
 
@@ -88,3 +110,22 @@ workflows:
       - deploy-app-prod:
           requires:
             - deploy-infra-prod
+
+      - cert-dev-approval:
+          type: approval
+          filters:
+            branches:
+              only: master
+
+      - cert-dev:
+          requires:
+            - cert-dev-approval
+
+      - cert-prod-approval:
+          type: approval
+          requires:
+            - cert-dev
+
+      - cert-prod:
+          requires:
+            - cert-prod-approval
