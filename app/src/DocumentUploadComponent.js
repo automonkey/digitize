@@ -1,22 +1,33 @@
 import React, { Component } from 'react';
 import './DocumentUploadComponent.css';
 import DropboxUploadService from './DropboxUploadService';
+import RecordNameGenerator from './RecordNameGenerator';
 
 class DocumentUploadComponent extends Component {
+
+  constructor() {
+    super();
+    this.recordNameGenerator = new RecordNameGenerator();
+    this.uploadClicked = this.uploadClicked.bind(this);
+  }
+
   render() {
     return (
       <div className="App">
         <form id="image-capture">
-          <input type="file"  accept="image/*;capture=camera" />
+          <input type="text" name="userSuppliedName" />
+          <input type="file" accept="image/*;capture=camera" />
         </form>
-        <button onClick={this.uploadImage}>submit</button>
+        <button onClick={this.uploadClicked}>submit</button>
       </div>
     );
   }
 
-  uploadImage() {
-    const input = document.querySelector('input[type=file]');
-    new DropboxUploadService().uploadFile(input.files[0]);
+  uploadClicked() {
+    const name = document.querySelector('input[name="userSuppliedName"]').value;
+    const fileInput = document.querySelector('input[type="file"]');
+    const recordName = this.recordNameGenerator.generate(name);
+    new DropboxUploadService().uploadFile(fileInput.files[0], recordName);
   }
 }
 
