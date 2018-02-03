@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { MemoryRouter } from 'react-router';
 import DocumentUploadComponent from './DocumentUploadComponent';
 import dropboxAccessToken from './dropboxAccessToken';
+import paths from './paths';
 
 describe('when access token is set', () => {
 
@@ -26,10 +27,10 @@ describe('when access token is not set', () => {
     const div = document.createElement('div');
 
     const router = ReactDOM.render((
-      <MemoryRouter initialEntries={[ { pathname: '/upload-page' } ]} >
+      <MemoryRouter initialEntries={[ { pathname: paths.documentUpload } ]} >
         <DocumentUploadComponent />
       </MemoryRouter>
     ), div);
-    expect(router.history.location.pathname).toBe('/')
+    expect(router.history.location.pathname).toBe(paths.login)
   });
 });

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router';
 import querystring from 'querystring';
+import paths from './paths';
 
 class DropboxAuthComponent extends Component {
 
@@ -11,7 +12,7 @@ class DropboxAuthComponent extends Component {
 
   render() {
     return (
-      <Redirect to="/upload"/>
+      <Redirect to={paths.documentUpload}/>
     );
   }
 }

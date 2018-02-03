@@ -4,6 +4,7 @@ import './DocumentUploadComponent.css';
 import DropboxUploadService from './DropboxUploadService';
 import RecordNameGenerator from './RecordNameGenerator';
 import dropboxAccessToken from './dropboxAccessToken';
+import paths from './paths';
 
 class DocumentUploadComponent extends Component {
 
@@ -17,7 +18,7 @@ class DocumentUploadComponent extends Component {
     if(!dropboxAccessToken.isSet()) {
       return (
         <div>
-          <Redirect to="/"/>
+          <Redirect to={paths.login}/>
         </div>
       );
     }
