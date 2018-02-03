@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
+import { Redirect } from 'react-router';
 import './DocumentUploadComponent.css';
 import DropboxUploadService from './DropboxUploadService';
 import RecordNameGenerator from './RecordNameGenerator';
+import dropboxAccessToken from './dropboxAccessToken';
 
 class DocumentUploadComponent extends Component {
 
@@ -12,6 +14,14 @@ class DocumentUploadComponent extends Component {
   }
 
   render() {
+    if(!dropboxAccessToken.isSet()) {
+      return (
+        <div>
+          <Redirect to="/"/>
+        </div>
+      );
+    }
+
     return (
       <div className="App">
         <form id="image-capture">
