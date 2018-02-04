@@ -34,11 +34,19 @@ class DocumentUploadComponent extends Component {
     );
   }
 
-  uploadClicked() {
+  async uploadClicked() {
     const name = document.querySelector('input[name="userSuppliedName"]').value;
     const fileInput = document.querySelector('input[type="file"]');
     const recordName = this.recordNameGenerator.generate(name);
-    new DropboxUploadService().uploadFile(fileInput.files[0], recordName);
+    const uploadService = new DropboxUploadService();
+
+    let uploaded = false;
+    try {
+      await uploadService.uploadFile(fileInput.files[0], recordName);
+      uploaded = true;
+    } catch (err) {
+    }
+    console.log(`${uploaded ? "Uploaded" : "Failed to upload"} record '${name}'`)
   }
 }
 

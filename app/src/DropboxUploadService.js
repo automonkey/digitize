@@ -2,15 +2,14 @@ import Dropbox from 'dropbox';
 import dropboxAccessToken from './dropboxAccessToken';
 
 class DropboxUploadService {
-  uploadFile(file, name) {
+  async uploadFile(file, name) {
     let dbx = new Dropbox({ accessToken: dropboxAccessToken.getAccessToken() });
-    dbx.filesUpload({path: `/${name}`, contents: file, autorename: true})
-    .then(function(response) {
-      console.log(response);
-    })
-    .catch(function(error) {
-      console.error(error);
-    });
+
+    try {
+      await dbx.filesUpload({path: `/${name}`, contents: file, autorename: true});
+    } catch (err) {
+      throw new Error('Failed to upload record to dropbox');
+    }
   }
 }
 
