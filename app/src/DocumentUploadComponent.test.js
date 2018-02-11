@@ -6,17 +6,21 @@ import Adapter from 'enzyme-adapter-react-16';
 import DocumentUploadComponent from './DocumentUploadComponent';
 import dropboxAccessToken from './dropboxAccessToken';
 import paths from './paths';
+import dropboxUploadService from './dropboxUploadService';
 
 beforeAll(() => {
   configureEnzyme({ adapter: new Adapter() });
+  spyOn(dropboxAccessToken, 'getAccessToken').and.returnValue('fake-access-token');
 });
 
 describe('when access token is set', () => {
 
+  let testRunner;
   let component;
   beforeEach(() => {
     spyOn(dropboxAccessToken, 'isSet').and.returnValue(true);
-    component = new TestRunner();
+    testRunner = new TestRunner();
+    component = testRunner.component;
   });
 
   it('should initially have submit button disabled', () => {
@@ -34,6 +38,22 @@ describe('when access token is set', () => {
     expect(component.submitButtonEnabled()).toBeFalsy();
   });
 
+  it('should disable form while uploading file', async () => {
+    component.setRecordName('some-name');
+    component.selectFile();
+    component.pressSubmitButton();
+
+    expect(component.formEntryEnabled()).toBeFalsy();
+  });
+
+  it('should enable form when file upload completes', async () => {
+    component.setRecordName('some-name');
+    component.selectFile();
+    component.pressSubmitButton();
+    await testRunner.triggerUploadComplete();
+
+    expect(component.formEntryEnabled()).toBeTruthy();
+  });
 });
 
 describe('when access token is not set', () => {
@@ -56,12 +76,44 @@ describe('when access token is not set', () => {
 
 class TestRunner {
   constructor() {
+    this.stubFileUpload();
+
     const div = document.createElement('div');
-    this.component = mount(<DocumentUploadComponent />, div);
+    this.component = new ComponentTester(mount(<DocumentUploadComponent />, div))
+  }
+
+  stubFileUpload() {
+    const fileUploadCompleted = new Promise(resolve => {
+      this.triggerUploadCompleted = resolve;
+    });
+    spyOn(dropboxUploadService, 'uploadFile').and.callFake(async () => {
+      await fileUploadCompleted;
+    });
+  }
+
+  async triggerUploadComplete() {
+    this.triggerUploadCompleted();
+
+    await allowResolvedAsycOperationsToComplete();
+    this.component.forceRender();
+
+    async function allowResolvedAsycOperationsToComplete() {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+  }
+}
+
+class ComponentTester {
+  constructor(component) {
+    this.component = component;
   }
 
   submitButtonEnabled() {
     return this.component.find('#submitBtn').props().disabled !== true;
+  }
+
+  formEntryEnabled() {
+    return this.component.find('fieldset').props().disabled !== true;
   }
 
   setRecordName(name) {
@@ -70,5 +122,13 @@ class TestRunner {
 
   selectFile() {
     this.component.find('input#fileSelection').simulate('change', { target: { files: [ 'some-file' ] } });
+  }
+
+  pressSubmitButton() {
+    this.component.find('#submitBtn').simulate('click');
+  }
+
+  forceRender() {
+    this.component.update();
   }
 }

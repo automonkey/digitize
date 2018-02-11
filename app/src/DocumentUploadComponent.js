@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router';
 import './DocumentUploadComponent.css';
-import DropboxUploadService from './DropboxUploadService';
+import dropboxUploadService from './dropboxUploadService';
 import RecordNameGenerator from './RecordNameGenerator';
 import dropboxAccessToken from './dropboxAccessToken';
 import paths from './paths';
@@ -17,6 +17,7 @@ class DocumentUploadComponent extends Component {
     this.submitButtonShouldBeDisabled = this.submitButtonShouldBeDisabled.bind(this);
 
     this.state = {
+      uploading: false,
       recordName: '',
       files: []
     };
@@ -34,13 +35,14 @@ class DocumentUploadComponent extends Component {
     return (
       <div className="DocumentUploadComponent">
         <form id="image-capture">
-          <input id="userSuppliedName" type="text" onChange={this.recordNameUpdated} value={this.state.recordName} />
-          <input id="fileSelection" type="file" accept="image/*;capture=camera" onChange={this.fileSelectionUpdated} />
-          <button id="submitBtn" disabled={this.submitButtonShouldBeDisabled()} onClick={this.uploadClicked}>submit</button>
+          <fieldset disabled={this.state.uploading}>
+            <input id="userSuppliedName" type="text" onChange={this.recordNameUpdated} value={this.state.recordName} />
+            <input id="fileSelection" type="file" accept="image/*;capture=camera" onChange={this.fileSelectionUpdated} />
+            <button id="submitBtn" disabled={this.submitButtonShouldBeDisabled()} onClick={this.uploadClicked}>submit</button>
+          </fieldset>
         </form>
       </div>
     );
-
   }
 
   submitButtonShouldBeDisabled() {
@@ -56,15 +58,16 @@ class DocumentUploadComponent extends Component {
   }
 
   async uploadClicked() {
+    this.setState({'uploading': true});
     const recordName = this.recordNameGenerator.generate(this.state.recordName);
-    const uploadService = new DropboxUploadService();
 
     let uploaded = false;
     try {
-      await uploadService.uploadFile(this.state.files[0], recordName);
+      await dropboxUploadService.uploadFile(this.state.files[0], recordName);
       uploaded = true;
     } catch (err) {
     }
+    this.setState({'uploading': false});
     console.log(`${uploaded ? "Uploaded" : "Failed to upload"} record '${this.state.recordName}'`)
   }
 }
