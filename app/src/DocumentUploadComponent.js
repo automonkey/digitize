@@ -12,6 +12,14 @@ class DocumentUploadComponent extends Component {
     super();
     this.recordNameGenerator = new RecordNameGenerator();
     this.uploadClicked = this.uploadClicked.bind(this);
+    this.recordNameUpdated = this.recordNameUpdated.bind(this);
+    this.fileSelectionUpdated = this.fileSelectionUpdated.bind(this);
+    this.submitButtonShouldBeDisabled = this.submitButtonShouldBeDisabled.bind(this);
+
+    this.state = {
+      recordName: '',
+      files: []
+    };
   }
 
   render() {
@@ -24,29 +32,40 @@ class DocumentUploadComponent extends Component {
     }
 
     return (
-      <div className="App">
+      <div className="DocumentUploadComponent">
         <form id="image-capture">
-          <input type="text" name="userSuppliedName" />
-          <input type="file" accept="image/*;capture=camera" />
+          <input id="userSuppliedName" type="text" onChange={this.recordNameUpdated} value={this.state.recordName} />
+          <input id="fileSelection" type="file" accept="image/*;capture=camera" onChange={this.fileSelectionUpdated} />
+          <button id="submitBtn" disabled={this.submitButtonShouldBeDisabled()} onClick={this.uploadClicked}>submit</button>
         </form>
-        <button onClick={this.uploadClicked}>submit</button>
       </div>
     );
+
+  }
+
+  submitButtonShouldBeDisabled() {
+    return !(this.state.recordName && this.state.files.length);
+  }
+
+  fileSelectionUpdated(e) {
+    this.setState({files: e.target.files});
+  }
+
+  recordNameUpdated(e) {
+    this.setState({recordName: e.target.value});
   }
 
   async uploadClicked() {
-    const name = document.querySelector('input[name="userSuppliedName"]').value;
-    const fileInput = document.querySelector('input[type="file"]');
-    const recordName = this.recordNameGenerator.generate(name);
+    const recordName = this.recordNameGenerator.generate(this.state.recordName);
     const uploadService = new DropboxUploadService();
 
     let uploaded = false;
     try {
-      await uploadService.uploadFile(fileInput.files[0], recordName);
+      await uploadService.uploadFile(this.state.files[0], recordName);
       uploaded = true;
     } catch (err) {
     }
-    console.log(`${uploaded ? "Uploaded" : "Failed to upload"} record '${name}'`)
+    console.log(`${uploaded ? "Uploaded" : "Failed to upload"} record '${this.state.recordName}'`)
   }
 }
 
