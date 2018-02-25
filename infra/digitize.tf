@@ -20,7 +20,7 @@ terraform {
 
 resource "aws_s3_bucket" "web_bucket" {
   bucket = "www.${var.environment == "prod" ? "" : "${var.environment}."}digitize.benyon.io"
-  acl    = "public-read"
+  acl    = "private"
 
   policy = <<EOF
 {
@@ -34,7 +34,9 @@ resource "aws_s3_bucket" "web_bucket" {
     ],
     "Effect": "Allow",
     "Resource": "arn:aws:s3:::www.${var.environment == "prod" ? "" : "${var.environment}."}digitize.benyon.io/*",
-    "Principal": "*"
+    "Principal": {
+      "AWS": "${aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn}"
+    }
   }
 ]
 }
