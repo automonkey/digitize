@@ -127,3 +127,8 @@
         --value "{{ acm_cert_import.stdout }}"
         --region eu-west-2
         --overwrite
+
+    - name: Clean up cert generation files dir
+      file:
+        state: absent
+        path: "{{ cert_generation_files_dir }}"
