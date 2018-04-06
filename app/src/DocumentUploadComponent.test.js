@@ -6,7 +6,9 @@ import Adapter from 'enzyme-adapter-react-16';
 import DocumentUploadComponent from './DocumentUploadComponent';
 import dropboxAccessToken from './dropboxAccessToken';
 import paths from './paths';
-import dropboxUploadService from './dropboxUploadService';
+import DropboxUploadService from './DropboxUploadService';
+
+jest.mock('./DropboxUploadService');
 
 beforeAll(() => {
   configureEnzyme({ adapter: new Adapter() });
@@ -16,43 +18,56 @@ beforeAll(() => {
 describe('when access token is set', () => {
 
   let testRunner;
-  let component;
   beforeEach(() => {
     spyOn(dropboxAccessToken, 'isSet').and.returnValue(true);
     testRunner = new TestRunner();
-    component = testRunner.component;
   });
 
-  it('should initially have submit button disabled', () => {
-    expect(component.submitButtonEnabled()).toBeFalsy();
+  it('should initially have submit button disabled', async () => {
+    await testRunner.run();
+
+    expect(testRunner.component.submitButtonEnabled()).toBeFalsy();
   });
 
-  it('should enable submit button only when record name entered and file selected', () => {
-    component.setRecordName('some-name');
-    expect(component.submitButtonEnabled()).toBeFalsy();
+  it('should enable submit button only when record name entered and file selected', async () => {
+    await testRunner.run();
 
-    component.selectFile();
-    expect(component.submitButtonEnabled()).toBeTruthy();
+    testRunner.component.setRecordName('some-name');
+    expect(testRunner.component.submitButtonEnabled()).toBeFalsy();
 
-    component.setRecordName('');
-    expect(component.submitButtonEnabled()).toBeFalsy();
+    testRunner.component.selectFile();
+    expect(testRunner.component.submitButtonEnabled()).toBeTruthy();
+
+    testRunner.component.setRecordName('');
+    expect(testRunner.component.submitButtonEnabled()).toBeFalsy();
   });
 
   it('should disable form while uploading file', async () => {
-    component.setRecordName('some-name');
-    component.selectFile();
-    component.pressSubmitButton();
+    await testRunner.run();
 
-    expect(component.formEntryEnabled()).toBeFalsy();
+    testRunner.component.setRecordName('some-name');
+    testRunner.component.selectFile();
+    testRunner.component.pressSubmitButton();
+
+    expect(testRunner.component.formEntryEnabled()).toBeFalsy();
+  });
+
+  it('should display tags', async () => {
+    testRunner.makeUploadServiceReturnTags(['a-tag', 'another-tag']);
+    await testRunner.run();
+
+    expect(testRunner.component.tags()).toEqual(expect.arrayContaining(['a-tag', 'another-tag']));
   });
 
   it('should enable form when file upload completes', async () => {
-    component.setRecordName('some-name');
-    component.selectFile();
-    component.pressSubmitButton();
+    await testRunner.run();
+
+    testRunner.component.setRecordName('some-name');
+    testRunner.component.selectFile();
+    testRunner.component.pressSubmitButton();
     await testRunner.triggerUploadComplete();
 
-    expect(component.formEntryEnabled()).toBeTruthy();
+    expect(testRunner.component.formEntryEnabled()).toBeTruthy();
   });
 });
 
@@ -62,7 +77,7 @@ describe('when access token is not set', () => {
     spyOn(dropboxAccessToken, 'isSet').and.returnValue(false);
   });
 
-  it('should redirect to /login if no access token', () => {
+  it('should redirect to /login', () => {
     const div = document.createElement('div');
 
     const router = ReactDOM.render((
@@ -70,24 +85,49 @@ describe('when access token is not set', () => {
         <DocumentUploadComponent />
       </MemoryRouter>
     ), div);
+
     expect(router.history.location.pathname).toBe(paths.login)
   });
+
+  it('should not attempt to fetch tags', async () => {
+    let testRunner = new TestRunner();
+    await testRunner.run();
+
+    expect(testRunner.fetchTagsMock.mock.calls.length).toBe(0);
+  })
+
 });
 
 class TestRunner {
   constructor() {
-    this.stubFileUpload();
-
-    const div = document.createElement('div');
-    this.component = new ComponentTester(mount(<DocumentUploadComponent />, div))
+    this.fetchTagsMock = jest.fn();
+    this.fetchTagsMock.mockReturnValue(['some-tag', 'some-other-tag']);
+    this.stubUploadService();
   }
 
-  stubFileUpload() {
+  makeUploadServiceReturnTags(tags) {
+    this.fetchTagsMock.mockReturnValue(tags);
+  }
+
+  async run() {
+    const div = document.createElement('div');
+    this.component = new ComponentTester(mount(<MemoryRouter><DocumentUploadComponent /></MemoryRouter>, div));
+    await allowResolvedAsycOperationsToComplete();
+    this.component.forceRender();
+  }
+
+  stubUploadService() {
     const fileUploadCompleted = new Promise(resolve => {
       this.triggerUploadCompleted = resolve;
     });
-    spyOn(dropboxUploadService, 'uploadFile').and.callFake(async () => {
-      await fileUploadCompleted;
+
+    DropboxUploadService.mockImplementation(() => {
+      return {
+        fetchTags: this.fetchTagsMock,
+        async uploadFile() {
+          await fileUploadCompleted;
+        }
+      };
     });
   }
 
@@ -96,10 +136,6 @@ class TestRunner {
 
     await allowResolvedAsycOperationsToComplete();
     this.component.forceRender();
-
-    async function allowResolvedAsycOperationsToComplete() {
-      await new Promise(resolve => setTimeout(resolve, 0));
-    }
   }
 }
 
@@ -128,7 +164,16 @@ class ComponentTester {
     this.component.find('#submitBtn').simulate('click');
   }
 
+  tags() {
+    return this.component.find('input[name="tag"]')
+      .map(n => n.props().value);
+  }
+
   forceRender() {
     this.component.update();
   }
+}
+
+async function allowResolvedAsycOperationsToComplete() {
+  await new Promise(resolve => setTimeout(resolve, 0));
 }

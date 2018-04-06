@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router';
 import './DocumentUploadComponent.css';
-import dropboxUploadService from './dropboxUploadService';
+import DropboxUploadService from './DropboxUploadService';
 import RecordNameGenerator from './RecordNameGenerator';
 import dropboxAccessToken from './dropboxAccessToken';
 import paths from './paths';
@@ -10,17 +10,29 @@ class DocumentUploadComponent extends Component {
 
   constructor() {
     super();
+
+    this.dropboxUploadService = new DropboxUploadService();
     this.recordNameGenerator = new RecordNameGenerator();
     this.uploadClicked = this.uploadClicked.bind(this);
     this.recordNameUpdated = this.recordNameUpdated.bind(this);
     this.fileSelectionUpdated = this.fileSelectionUpdated.bind(this);
+    this.tagSelected = this.tagSelected.bind(this);
     this.submitButtonShouldBeDisabled = this.submitButtonShouldBeDisabled.bind(this);
 
     this.state = {
       uploading: false,
       recordName: '',
-      files: []
+      files: [],
+      tags: [],
+      selectedTag: null
     };
+  }
+
+  async componentWillMount() {
+    if(dropboxAccessToken.isSet()) {
+      const tags = await this.dropboxUploadService.fetchTags();
+      this.setState({'tags': tags});
+    }
   }
 
   render() {
@@ -32,12 +44,20 @@ class DocumentUploadComponent extends Component {
       );
     }
 
+    const tagSelections = this.state.tags.map(tag => {
+      return [
+        <input type="radio" name="tag" key={tag} value={tag} onChange={this.tagSelected} />,
+        tag
+      ]
+    });
+
     return (
       <div className="DocumentUploadComponent">
         <form id="image-capture">
           <fieldset disabled={this.state.uploading}>
             <input id="userSuppliedName" type="text" onChange={this.recordNameUpdated} value={this.state.recordName} />
             <input id="fileSelection" type="file" accept="image/*;capture=camera" onChange={this.fileSelectionUpdated} />
+            {tagSelections}
             <button id="submitBtn" disabled={this.submitButtonShouldBeDisabled()} onClick={this.uploadClicked}>submit</button>
           </fieldset>
         </form>
@@ -57,13 +77,17 @@ class DocumentUploadComponent extends Component {
     this.setState({recordName: e.target.value});
   }
 
+  tagSelected(e) {
+    this.setState({selectedTag: e.target.value});
+  }
+
   async uploadClicked() {
     this.setState({'uploading': true});
     const recordName = this.recordNameGenerator.generate(this.state.recordName);
 
     let uploaded = false;
     try {
-      await dropboxUploadService.uploadFile(this.state.files[0], recordName);
+      await this.dropboxUploadService.uploadFile(this.state.files[0], recordName, this.state.selectedTag);
       uploaded = true;
     } catch (err) {
     }
