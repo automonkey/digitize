@@ -4,7 +4,7 @@ set -eo pipefail
 
 if [ -z ${ENV+x} ]; then echo "ENV is unset"; exit 1; else echo "ENV is set ($ENV)"; fi
 
-TERRAFORM_STATE_BUCKET="www.$ENV.digitize.benyon.io.terraform"
+TERRAFORM_STATE_BUCKET="io.benyon.digitize.$ENV.terraform"
 
 set +e
 eval "aws s3api head-bucket --bucket '$TERRAFORM_STATE_BUCKET' 2>/dev/null"

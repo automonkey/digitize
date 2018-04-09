@@ -4,7 +4,7 @@ set -eo pipefail
 
 if [ -z ${ENV+x} ]; then echo "ENV is unset"; exit 1; else echo "Destroying ENV '$ENV'"; fi
 
-TERRAFORM_STATE_BUCKET="www.$ENV.digitize.benyon.io.terraform"
+TERRAFORM_STATE_BUCKET="io.benyon.digitize.$ENV.terraform"
 
 set +e
 eval "aws s3api head-bucket --bucket '$TERRAFORM_STATE_BUCKET' 2>/dev/null"
@@ -17,11 +17,7 @@ then
     exit 2
 fi
 
-if [ "$ENV" != "prod" ]; then
-  APP_BUCKET_ENV_URL_PART="$ENV."
-fi
-
-APP_DEPLOYMENT_BUCKET=www.${APP_BUCKET_ENV_URL_PART}digitize.benyon.io
+AWS_DEPLOYMENT_BUCKET="io.benyon.digitize.$ENV.www"
 
 (
     cd infra

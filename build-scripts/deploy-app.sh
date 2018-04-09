@@ -7,12 +7,7 @@ if [ -z ${ENV+x} ]; then
   ENV="dev"
 fi
 
-
-if [ "$ENV" != "prod" ]; then
-  ENV_URL_PART="$ENV."
-fi
-
-AWS_DEPLOYMENT_BUCKET=www.${ENV_URL_PART}digitize.benyon.io
+AWS_DEPLOYMENT_BUCKET="io.benyon.digitize.$ENV.www"
 echo "Deploying to bucket '$AWS_DEPLOYMENT_BUCKET'"
 
 (
@@ -23,7 +18,7 @@ echo "Deploying to bucket '$AWS_DEPLOYMENT_BUCKET'"
     aws s3 sync build s3://$AWS_DEPLOYMENT_BUCKET --delete
 )
 
-CLOUDFRONT_ORIGIN_ID=${ENV}.digitize.benyon.io
+CLOUDFRONT_ORIGIN_ID="io.benyon.digitize.${ENV}"
 CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudfront list-distributions \
     --query "DistributionList.Items[?contains(Origins.Items[*].Id, '$CLOUDFRONT_ORIGIN_ID')]|[0].Id" \
     --output text \

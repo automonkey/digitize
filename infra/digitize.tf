@@ -18,7 +18,7 @@ terraform {
 }
 
 resource "aws_s3_bucket" "web_bucket" {
-  bucket = "www.${var.environment == "prod" ? "" : "${var.environment}."}digitize.benyon.io"
+  bucket = "io.benyon.digitize.${var.environment}.www"
   acl    = "private"
 
   policy = <<EOF
@@ -32,7 +32,7 @@ resource "aws_s3_bucket" "web_bucket" {
       "s3:GetObject"
     ],
     "Effect": "Allow",
-    "Resource": "arn:aws:s3:::www.${var.environment == "prod" ? "" : "${var.environment}."}digitize.benyon.io/*",
+    "Resource": "arn:aws:s3:::io.benyon.digitize.${var.environment}.www/*",
     "Principal": {
       "AWS": "${aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn}"
     }
@@ -53,7 +53,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   origin {
     domain_name = "${aws_s3_bucket.web_bucket.bucket_domain_name}"
-    origin_id   = "${var.environment}.digitize.benyon.io"
+    origin_id   = "io.benyon.digitize.${var.environment}"
 
     s3_origin_config {
       origin_access_identity = "${aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path}"
@@ -62,7 +62,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "${var.environment}.digitize.benyon.io s3 distribution"
+  comment             = "${var.environment}.digitize.benyon.io web bucket distribution"
   default_root_object = "index.html"
   custom_error_response {
     error_code = 404
@@ -73,7 +73,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "${var.environment}.digitize.benyon.io"
+    target_origin_id = "io.benyon.digitize.${var.environment}"
 
     forwarded_values {
       query_string = false
