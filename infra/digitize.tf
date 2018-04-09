@@ -12,8 +12,7 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket  = "www.digitize.benyon.io.terraform"
-    key     = "network/terraform-dev.tfstate"
+    key     = "digitize.tfstate"
     region  = "eu-west-2"
   }
 }
