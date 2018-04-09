@@ -33,16 +33,6 @@ It correctly bundles React in production mode and optimizes the build for the be
 
 Note, all commands support the AWS_PROFILE environment variable. It is encouraged to use this environment variable rather than relying on default configured profile.
 
-### Bootstrap
-
-The project uses an S3 backend to store the terraform state. To create the bucket required for this, execute:
-
-```bash
-[AWS_PROFILE=profile-name] ./build-scripts/bootstap-infra.sh
-```
-
-Requires [awscli](https://aws.amazon.com/cli/) to be installed.
-
 ### Initialising
 
 ```bash
