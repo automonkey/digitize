@@ -7,6 +7,7 @@ variable "latest_ssl_cert_arn" {
 }
 
 provider "aws" {
+  version = "~> 1.14"
   region = "eu-west-2"
 }
 
