@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 import './index.css';
+import './DocumentUploadComponent.css';
 import DocumentUploadComponent from './DocumentUploadComponent';
 import Login from './Login';
 import registerServiceWorker from './registerServiceWorker';

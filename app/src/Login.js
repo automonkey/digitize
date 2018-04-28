@@ -1,6 +1,6 @@
 import Dropbox from 'dropbox';
 import React, { Component } from 'react';
-import './DocumentUploadComponent.css';
+import './DocumentUploadComponent.scss';
 import paths from './paths';
 
 class Login extends Component {

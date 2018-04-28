@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router';
-import './DocumentUploadComponent.css';
+import './DocumentUploadComponent.scss';
 import DropboxUploadService from './DropboxUploadService';
 import RecordNameGenerator from './RecordNameGenerator';
 import dropboxAccessToken from './dropboxAccessToken';
 import paths from './paths';
+
+import './DocumentUploadComponent.scss';
 
 class DocumentUploadComponent extends Component {
 
