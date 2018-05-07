@@ -24,6 +24,7 @@ LATEST_SSL_CERT=$(aws ssm get-parameter --region eu-west-2 --name digitize-$ENV-
     terraform init \
         -backend-config="bucket=$TERRAFORM_STATE_BUCKET"
     terraform apply \
+        -auto-approve \
         -var "environment=$ENV" \
         -var "latest_ssl_cert_arn=$LATEST_SSL_CERT"
 )
