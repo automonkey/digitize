@@ -47,16 +47,17 @@ class DocumentUploadComponent extends Component {
     }
 
     const tagSelections = this.state.tags.map(tag => {
-      return [
-        <input type="radio" name="tag" key={tag} value={tag} onChange={this.tagSelected} />,
-        tag
-      ]
+      return  [
+        <input id={tag} type="radio" name="tag" key={tag} value={tag} onChange={this.tagSelected} />,
+        <label class="tag" for={tag}>{tag}</label>,
+        <span class="tagg">sadsdsad</span>
+      ];
     });
 
     return (
       <div className="DocumentUploadComponent">
         <form id="image-capture">
-          <fieldset disabled={this.state.uploading}>
+          <fieldset id="uploadForm" disabled={this.state.uploading}>
             <input id="userSuppliedName" type="text" onChange={this.recordNameUpdated} value={this.state.recordName} />
             <input id="fileSelection" type="file" accept="image/*;capture=camera" onChange={this.fileSelectionUpdated} />
             {tagSelections}

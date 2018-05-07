@@ -1,3 +1,17 @@
 fieldset {
   border: 0;
 }
+
+#uploadForm {
+  display: grid;
+
+  //.tag {
+  //  position: absolute;
+  //  opacity: 0;
+  //  cursor: pointer;
+  //}
+
+  .tag input:checked ~ .tagg {
+    background-color: #2196F3;
+  }
+}
