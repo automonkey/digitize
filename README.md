@@ -43,6 +43,28 @@ AWS_ACCESS_KEY_ID=<your_access_key_id> AWS_SECRET_ACCESS_KEY=<your-access-key> t
 
 For all deploy jobs the environment variable `ENV` is used to determine where to deploy to (which AWS resources are created/replaced/deleted).
 
+### Setup
+
+Running deploy scripts will require [Terraform](https://www.terraform.io/). For macOS, suggest installing with [homebrew](https://brew.sh/). For explicit version of Terraform used on CI see version downloaded in script `build-scripts/ci-install-terraform.sh`.
+
+For instance:
+
+`brew install terraform`
+
+Deploy scripts also require the [AWS CLI](https://aws.amazon.com/cli/). Suggested way to install is with Python package from pip. Suggest installing in a [Python venv](https://docs.python.org/3/tutorial/venv.html) to create a dedicated operating environment for the project.
+
+From root dir of the project run:
+
+```
+python3 -m venv digitize-venv
+source digitize-venv/bin/activate
+pip install awscli
+```
+
+Then, to enable that environment before running deploy scrips you can do:
+
+`source digitize-venv/bin/activate`
+
 ### Step 1: Generate SSL Cert
 
 Requests SSL cert from certificate authority and uploads to AWS.
