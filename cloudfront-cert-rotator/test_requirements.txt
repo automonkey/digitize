@@ -1,0 +1,7 @@
+bandit~=1.4
+black~=19.3b0
+flake8~=3.5
+piprot~=0.9
+pyhamcrest~=1.9
+pytest~=4.0
+safety~=1.8

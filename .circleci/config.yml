@@ -49,6 +49,17 @@ jobs:
       - run:
           name: Generate cert
           command: ./build-scripts/generate-ssl-cert.sh
+  rotate-ssl-cert: &ROTATE_SSL_CERT
+      docker:
+        - image: buildpack-deps:trusty
+      steps:
+        - checkout
+        - run:
+            name: CI Setup
+            command: ./build-scripts/ci-setup-cert-rotation.sh
+        - run:
+            name: Rotate cert
+            command: ./build-scripts/rotate-ssl-cert.sh
 
   deploy-infra-dev:
     <<: *DEPLOY_INFRA
@@ -75,8 +86,18 @@ jobs:
     environment:
       ENV: dev
 
+  rotate-cert-dev:
+      <<: *ROTATE_SSL_CERT
+      environment:
+        ENV: dev
+
   cert-prod:
     <<: *GENERATE_SSL_CERT
+    environment:
+      ENV: prod
+
+  rotate-cert-prod:
+    <<: *ROTATE_SSL_CERT
     environment:
       ENV: prod
 
@@ -121,11 +142,19 @@ workflows:
           requires:
             - cert-dev-approval
 
+      - rotate-cert-dev:
+            requires:
+              - cert-dev
+
       - cert-prod-approval:
           type: approval
           requires:
-            - cert-dev
+            - rotate-cert-dev
 
       - cert-prod:
           requires:
             - cert-prod-approval
+
+      - rotate-cert-prod:
+          requires:
+            - cert-prod
