@@ -56,8 +56,8 @@ Deploy scripts also require the [AWS CLI](https://aws.amazon.com/cli/). Suggeste
 From root dir of the project run:
 
 ```
-python3 -m venv digitize-venv
-source digitize-venv/bin/activate
+python3 -m venv --prompt digitize venv
+source venv/bin/activate
 pip install awscli
 ```
 
