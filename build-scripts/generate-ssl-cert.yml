@@ -9,7 +9,7 @@
     dir: "{{ lookup('env','PWD') }}"
     acme_url_prod: "https://acme-v01.api.letsencrypt.org/directory"
     acme_url_staging: "https://acme-staging.api.letsencrypt.org/directory"
-    acme_url: "{{ acme_url_prod }}"
+    acme_url: "{{ acme_url_staging }}"
     cert_generation_files_dir: "{{ dir }}/ssl_cert_generation_files"
   tasks:
     - name: assert required variables exist
@@ -109,7 +109,6 @@
       command: >
         aws acm import-certificate
         --certificate file://{{ cert_generation_files_dir }}/{{ fqdn }}.crt
-        --certificate-chain file://{{ cert_generation_files_dir }}/chain.pem
         --private-key file://{{ cert_generation_files_dir }}/{{ fqdn }}.pem
         --region us-east-1
         --output text
