@@ -131,9 +131,9 @@ workflows:
       - deploy-app-prod:
           requires:
             - deploy-infra-prod
-
-  cert:
+  triggered-cert-rotation:
     jobs:
+
       - cert-dev-approval:
           type: approval
           filters:
@@ -156,6 +156,29 @@ workflows:
       - cert-prod:
           requires:
             - cert-prod-approval
+
+      - rotate-cert-prod:
+          requires:
+            - cert-prod
+
+  scheduled-cert-rotation:
+    triggers:
+      - schedule:
+          cron: "0 5 17 * *"
+          filters:
+            branches:
+              only: master
+    jobs:
+
+      - cert-dev
+
+      - rotate-cert-dev:
+          requires:
+            - cert-dev
+
+      - cert-prod:
+          requires:
+            - rotate-cert-dev
 
       - rotate-cert-prod:
           requires:
