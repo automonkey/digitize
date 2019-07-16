@@ -103,7 +103,7 @@ jobs:
 
 workflows:
   version: 2
-  deploy:
+  app:
     jobs:
 
       - test:
@@ -132,6 +132,8 @@ workflows:
           requires:
             - deploy-infra-prod
 
+  cert:
+    jobs:
       - cert-dev-approval:
           type: approval
           filters:
