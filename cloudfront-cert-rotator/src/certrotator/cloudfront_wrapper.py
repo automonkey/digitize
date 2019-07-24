@@ -12,3 +12,6 @@ class CloudfrontWrapper:
         self.cloudfront_client.update_distribution(
             Id=distribution_id, IfMatch=if_etag_matches, DistributionConfig=distribution_configuration
         )
+
+    def list_distributions(self):
+        return self.cloudfront_client.list_distributions()

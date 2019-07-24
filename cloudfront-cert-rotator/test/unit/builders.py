@@ -1,3 +1,6 @@
+import random
+import string
+
 NOT_PASSED = object()
 
 
@@ -21,4 +24,29 @@ def a_boto3_cloudfront_get_distribution_response(with_acm_certificate_arn=NOT_PA
             },
         },
         "ETag": etag,
+    }
+
+
+def a_boto3_cloudfront_list_distributions_response(with_items=NOT_PASSED):
+    return {
+        "DistributionList": {
+            "IsTruncated": False,
+            "Items": with_items if with_items != NOT_PASSED else [a_boto3_cloudfront_list_distributions_response_item()]
+        }
+    }
+
+
+def a_boto3_cloudfront_list_distributions_response_item(with_origins=NOT_PASSED, with_id=NOT_PASSED):
+    distribution_id = with_id if with_id != NOT_PASSED else ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
+    return {
+        'ARN': 'arn:aws:cloudfront::123456789012:distribution/{}'.format(distribution_id),
+        'Origins': list_distributions_response_origins_item(with_origins if with_origins != NOT_PASSED else []),
+        'Id': distribution_id
+    }
+
+
+def list_distributions_response_origins_item(origin_ids):
+    return {
+        'Items': [{'Id': id} for id in origin_ids],
+        'Quantity': len(origin_ids)
     }

@@ -3,7 +3,7 @@ import logging
 import sys
 import warnings
 
-from src.certrotator.cert_rotator import CertRotator
+from src.certrotator.cert_updater import CertUpdater
 from src.certrotator.cloudfront_wrapper import CloudfrontWrapper
 
 logger = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     args = parse_args()
-    CertRotator(CloudfrontWrapper()).rotate_cert(cf_distribution_id=args.distribution_id, cert_arn=args.certificate_arn)
+    CertUpdater(CloudfrontWrapper()).update_cert(cf_distribution_id=args.distribution_id, cert_arn=args.certificate_arn)
 
 
 def parse_args():
@@ -27,7 +27,7 @@ def create_parser():
         description="Update existing CloudFront distribution with new TLS viewer certificate."
     )
 
-    parser.add_argument("distribution_id", help="CloudFront distribution to rotate the cert of")
+    parser.add_argument("env", help="Environment to rotate the cert of")
     parser.add_argument("certificate_arn", help="New certificate to use")
 
     parser.add_argument("-d", "--dry-run", action="store_true", help="Dry run - don't actually rename anything")

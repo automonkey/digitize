@@ -1,8 +1,8 @@
-class CertRotator:
+class CertUpdater:
     def __init__(self, cloudfront_wrapper):
         self.cloudfront_wrapper = cloudfront_wrapper
 
-    def rotate_cert(self, cf_distribution_id, cert_arn):
+    def update_cert(self, cf_distribution_id, cert_arn):
         distribution_config_response = self.cloudfront_wrapper.get_distribution_config(cf_distribution_id)
         distribution_config = distribution_config_response["DistributionConfig"]
         distribution_config["ViewerCertificate"]["ACMCertificateArn"] = cert_arn

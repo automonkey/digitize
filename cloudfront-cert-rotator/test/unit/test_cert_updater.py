@@ -1,13 +1,13 @@
-from hamcrest import has_entry, assert_that, has_key, not_, is_
+from hamcrest import assert_that, has_key, not_, is_
 
-from src.certrotator.cert_rotator import CertRotator
+from src.certrotator.cert_updater import CertUpdater
 from unittest.mock import MagicMock, Mock, DEFAULT
 
 from src.certrotator.cloudfront_wrapper import CloudfrontWrapper
 from test.unit.builders import a_boto3_cloudfront_get_distribution_response
 
 
-def test_updates_cert_arn_for_supplied_distribution_id():
+def test_cert_updater_updates_cert_arn_for_supplied_distribution_id():
     # Given
     cf_wrapper = CloudfrontWrapper()
 
@@ -24,7 +24,7 @@ def test_updates_cert_arn_for_supplied_distribution_id():
 
     # When
     new_cert_arn = "new:certificate:arn"
-    CertRotator(cf_wrapper).rotate_cert(the_existing_distribution_id, new_cert_arn)
+    CertUpdater(cf_wrapper).update_cert(the_existing_distribution_id, new_cert_arn)
 
     # Then
 
