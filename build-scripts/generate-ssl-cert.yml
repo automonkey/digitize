@@ -6,8 +6,8 @@
     gandi_api_key: ""
     fqdn: "www.{{ (env != 'prod') | ternary(env + '.','') }}digitize.benyon.io"
     dir: "{{ lookup('env','PWD') }}"
-    acme_url_prod: "https://acme-v01.api.letsencrypt.org/directory"
-    acme_url_staging: "https://acme-staging.api.letsencrypt.org/directory"
+    acme_url_prod: "https://acme-v02.api.letsencrypt.org/directory"
+    acme_url_staging: "https://acme-staging-v02.api.letsencrypt.org/directory"
     acme_url: "{{ acme_url_prod }}"
     cert_generation_files_dir: "{{ dir }}/ssl_cert_generation_files"
   tasks:
@@ -44,6 +44,7 @@
 
     - name: get the Lets Encrypt challenge
       acme_certificate:
+        acme_version: 2
         acme_directory: "{{ acme_url }}"
         account_key: "{{ cert_generation_files_dir }}/account.pem"
         csr: "{{ cert_generation_files_dir }}/{{ fqdn }}.csr"
@@ -51,6 +52,7 @@
         agreement: "https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf"
         challenge: dns-01
         remaining_days: 2
+        terms_agreed: yes
       register: dns_challenge
       retries: 10
       delay: 5
@@ -74,13 +76,14 @@
 
     - name: respond to Lets Encrypt challenge
       acme_certificate:
+        acme_version: 2
         acme_directory: "{{ acme_url }}"
         account_key: "{{ cert_generation_files_dir }}/account.pem"
         csr: "{{ cert_generation_files_dir }}/{{ fqdn }}.csr"
         dest: "{{ cert_generation_files_dir }}/{{ fqdn }}.crt"
-        agreement: "https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf"
         challenge: dns-01
         remaining_days: 2
+        terms_agreed: yes
         data: "{{ dns_challenge }}"
       retries: 10
       delay: 5
