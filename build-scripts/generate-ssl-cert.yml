@@ -4,7 +4,6 @@
   vars:
     env: ""
     gandi_api_key: ""
-    gandi_dns_zone_id: ""
     fqdn: "www.{{ (env != 'prod') | ternary(env + '.','') }}digitize.benyon.io"
     dir: "{{ lookup('env','PWD') }}"
     acme_url_prod: "https://acme-v01.api.letsencrypt.org/directory"
@@ -17,7 +16,6 @@
         that:
           - env != ""
           - gandi_api_key != ""
-          - gandi_dns_zone_id != ""
 
     - name: ensure cert generation files dir exists
       file:
@@ -61,15 +59,13 @@
       uri:
         method: POST
         headers:
-          X-Api-Key: "{{ gandi_api_key }}"
+          Authorization: "Apikey {{ gandi_api_key }}"
         body_format: json
         body:
-          rrset_name: "{{ item.value['dns-01']['resource'] }}.{{ item.key | regex_replace('\\.benyon\\.io$', '') }}"
-          rrset_type: "TXT"
           rrset_ttl: 300
           rrset_values: ["{{ item.value['dns-01']['resource_value'] }}"]
-        url: "https://dns.api.gandi.net/api/v5/zones/{{ gandi_dns_zone_id }}/records"
-        status_code: 201
+        url: "https://api.gandi.net/v5/livedns/domains/benyon.io/records/{{ item.value['dns-01']['resource'] }}.{{ item.key | regex_replace('\\.benyon\\.io$', '') }}/TXT"
+        status_code: 200, 201
       with_dict: "{{ dns_challenge['challenge_data'] | default({}) }}"
 
     - name: allow Gandi DNS time to stabalise
@@ -93,10 +89,8 @@
       uri:
         method: DELETE
         headers:
-          X-Api-Key: "{{ gandi_api_key }}"
-        body_format: json
-        body: ""
-        url: "https://dns.api.gandi.net/api/v5/zones/{{ gandi_dns_zone_id }}/records/{{ item.value['dns-01']['resource'] }}.{{ item.key | regex_replace('\\.benyon\\.io$', '') }}/TXT"
+          Authorization: "Apikey {{ gandi_api_key }}"
+        url: "https://api.gandi.net/v5/livedns/domains/benyon.io/records/{{ item.value['dns-01']['resource'] }}.{{ item.key | regex_replace('\\.benyon\\.io$', '') }}/TXT"
         status_code: 204
       with_dict: "{{ dns_challenge['challenge_data'] | default({}) }}"
 
