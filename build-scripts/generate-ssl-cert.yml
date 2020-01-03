@@ -45,7 +45,7 @@
         organizational_unit_name: Digitize
 
     - name: get the Lets Encrypt challenge
-      letsencrypt:
+      acme_certificate:
         acme_directory: "{{ acme_url }}"
         account_key: "{{ cert_generation_files_dir }}/account.pem"
         csr: "{{ cert_generation_files_dir }}/{{ fqdn }}.csr"
@@ -77,7 +77,7 @@
         seconds: 3
 
     - name: respond to Lets Encrypt challenge
-      letsencrypt:
+      acme_certificate:
         acme_directory: "{{ acme_url }}"
         account_key: "{{ cert_generation_files_dir }}/account.pem"
         csr: "{{ cert_generation_files_dir }}/{{ fqdn }}.csr"
