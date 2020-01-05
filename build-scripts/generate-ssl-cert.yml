@@ -49,7 +49,6 @@
         account_key: "{{ cert_generation_files_dir }}/account.pem"
         csr: "{{ cert_generation_files_dir }}/{{ fqdn }}.csr"
         dest: "{{ cert_generation_files_dir }}/{{ fqdn }}.crt"
-        agreement: "https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf"
         challenge: dns-01
         remaining_days: 2
         terms_agreed: yes
