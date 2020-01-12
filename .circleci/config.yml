@@ -51,7 +51,7 @@ jobs:
           command: ./build-scripts/generate-ssl-cert.sh
   rotate-ssl-cert: &ROTATE_SSL_CERT
       docker:
-        - image: buildpack-deps:trusty
+        - image: buildpack-deps:xenial
       steps:
         - checkout
         - run:

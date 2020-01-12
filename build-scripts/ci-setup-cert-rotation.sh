@@ -4,7 +4,8 @@ set -eo pipefail
 
 ./build-scripts/ci-install-awscli.sh
 
-apt-get install -y -qq python3-pip
+apt-get update
+apt-get install --assume-yes python3 python3-pip
 pip3 install --upgrade setuptools
 
 (
