@@ -40,7 +40,7 @@ jobs:
 
   generate-ssl-cert: &GENERATE_SSL_CERT
     docker:
-      - image: buildpack-deps:xenial
+      - image: circleci/python:3.8.1
     steps:
       - checkout
       - run:
