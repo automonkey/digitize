@@ -2,7 +2,7 @@ version: 2
 
 jobs:
 
-  test:
+  test-app:
     docker:
       - image: buildpack-deps:trusty
     steps:
@@ -119,7 +119,7 @@ workflows:
   app:
     jobs:
 
-      - test:
+      - test-app:
           filters:
             branches:
               only: master
@@ -131,7 +131,7 @@ workflows:
 
       - deploy-infra-dev:
           requires:
-            - test
+            - test-app
 
       - deploy-app-dev:
           requires:
