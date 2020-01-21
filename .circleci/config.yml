@@ -14,6 +14,18 @@ jobs:
           name: Tests
           command: ./build-scripts/test-app.sh
 
+  test-cert-rotator:
+    docker:
+      - image: circleci/python:3.8.1
+    steps:
+      - checkout
+      - run:
+          name: CI Setup
+          command: ./build-scripts/ci-setup-cert-rotator-tests.sh
+      - run:
+          name: Tests
+          command: ./build-scripts/test-cert-rotator.sh
+
   deploy-infra: &DEPLOY_INFRA
     docker:
       - image: buildpack-deps:trusty
@@ -49,6 +61,7 @@ jobs:
       - run:
           name: Generate cert
           command: ./build-scripts/generate-ssl-cert.sh
+
   rotate-ssl-cert: &ROTATE_SSL_CERT
       docker:
         - image: circleci/python:3.8.1
@@ -107,6 +120,11 @@ workflows:
     jobs:
 
       - test:
+          filters:
+            branches:
+              only: master
+
+      - test-cert-rotator:
           filters:
             branches:
               only: master
