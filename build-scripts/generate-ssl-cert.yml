@@ -98,7 +98,7 @@
 
     - name: get Certificate Chain from Lets Encrypt
       get_url:
-        url: https://letsencrypt.org/certs/lets-encrypt-x3-cross-signed.pem.txt
+        url: https://letsencrypt.org/certs/lets-encrypt-r3-cross-signed.pem
         dest: "{{ cert_generation_files_dir }}/chain.pem"
 
     - name: upload cert to AWS Certificate Manager
