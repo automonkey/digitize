@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { MemoryRouter } from 'react-router';
-import { configure as configureEnzyme, mount } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+import {render, screen, fireEvent, waitFor, getByLabelText} from '@testing-library/react'
+import '@testing-library/jest-dom';
 import DocumentUploadComponent from './DocumentUploadComponent';
 import dropboxAccessToken from './dropboxAccessToken';
 import paths from './paths';
@@ -10,56 +10,47 @@ import DropboxUploadService from './DropboxUploadService';
 
 jest.mock('./DropboxUploadService');
 
-beforeAll(() => {
-  configureEnzyme({ adapter: new Adapter() });
-  spyOn(dropboxAccessToken, 'getAccessToken').and.returnValue('fake-access-token');
-});
-
 describe('when access token is set', () => {
+
+  beforeAll(() => {
+    dropboxAccessToken.setAccessToken("fake-access-token");
+  });
 
   let testRunner;
   beforeEach(() => {
-    spyOn(dropboxAccessToken, 'isSet').and.returnValue(true);
     testRunner = new TestRunner();
   });
 
   it('should initially have submit button disabled', async () => {
     await testRunner.run();
 
-    expect(testRunner.component.submitButtonEnabled()).toBeFalsy();
+    expect(testRunner.component.submitButton()).toBeDisabled();
   });
 
   it('should enable submit button only when record name entered and file selected', async () => {
     await testRunner.run();
 
     testRunner.component.setRecordName('some-name');
-    expect(testRunner.component.submitButtonEnabled()).toBeFalsy();
+    expect(testRunner.component.submitButton()).toBeDisabled();
 
     testRunner.component.selectFile();
-    expect(testRunner.component.submitButtonEnabled()).toBeTruthy();
+    expect(testRunner.component.submitButton()).toBeEnabled();
 
     testRunner.component.setRecordName('');
-    expect(testRunner.component.submitButtonEnabled()).toBeFalsy();
+    expect(testRunner.component.submitButton()).toBeDisabled();
   });
 
-  it('should disable form while uploading file', async () => {
+  it('should disable submit button while uploading file', async () => {
     await testRunner.run();
 
     testRunner.component.setRecordName('some-name');
     testRunner.component.selectFile();
     testRunner.component.pressSubmitButton();
 
-    expect(testRunner.component.formEntryEnabled()).toBeFalsy();
+    expect(testRunner.component.submitButton()).toBeDisabled();
   });
 
-  it('should display tags', async () => {
-    testRunner.makeUploadServiceReturnTags(['a-tag', 'another-tag']);
-    await testRunner.run();
-
-    expect(testRunner.component.tags()).toEqual(expect.arrayContaining(['a-tag', 'another-tag']));
-  });
-
-  it('should enable form when file upload completes', async () => {
+  it('should enable submit button when file upload completes', async () => {
     await testRunner.run();
 
     testRunner.component.setRecordName('some-name');
@@ -67,14 +58,24 @@ describe('when access token is set', () => {
     testRunner.component.pressSubmitButton();
     await testRunner.triggerUploadComplete();
 
-    expect(testRunner.component.formEntryEnabled()).toBeTruthy();
+    await waitFor(() => expect(testRunner.component.submitButton()).toBeEnabled());
+  });
+
+  it('should display tags', async () => {
+    testRunner.makeUploadServiceReturnTags(['a-tag', 'another-tag']);
+    await testRunner.run();
+
+    const tags = testRunner.component.tags();
+    expect(getByLabelText(tags, 'a-tag')).toBeVisible();
+    expect(getByLabelText(tags, 'another-tag')).toBeVisible();
   });
 });
 
+
 describe('when access token is not set', () => {
 
-  beforeEach(() => {
-    spyOn(dropboxAccessToken, 'isSet').and.returnValue(false);
+  beforeAll(() => {
+    dropboxAccessToken.clearAccessToken();
   });
 
   it('should redirect to /login', () => {
@@ -110,10 +111,8 @@ class TestRunner {
   }
 
   async run() {
-    const div = document.createElement('div');
-    this.component = new ComponentTester(mount(<MemoryRouter><DocumentUploadComponent /></MemoryRouter>, div));
-    await allowResolvedAsycOperationsToComplete();
-    this.component.forceRender();
+    render(<MemoryRouter><DocumentUploadComponent /></MemoryRouter>)
+    this.component = new ComponentTester();
   }
 
   stubUploadService() {
@@ -133,47 +132,30 @@ class TestRunner {
 
   async triggerUploadComplete() {
     this.triggerUploadCompleted();
-
-    await allowResolvedAsycOperationsToComplete();
-    this.component.forceRender();
   }
 }
 
 class ComponentTester {
-  constructor(component) {
-    this.component = component;
-  }
 
-  submitButtonEnabled() {
-    return this.component.find('#submitBtn').props().disabled !== true;
-  }
-
-  formEntryEnabled() {
-    return this.component.find('fieldset').props().disabled !== true;
+  submitButton() {
+    return screen.getByRole('button', { name: 'submit' });
   }
 
   setRecordName(name) {
-    this.component.find('input#userSuppliedName').simulate('change', { target: { value: name } });
+    const input = screen.getByLabelText('Name');
+    fireEvent.change(input, {target: {value: name}});
   }
 
   selectFile() {
-    this.component.find('input#fileSelection').simulate('change', { target: { files: [ 'some-file' ] } });
+    const input = screen.getByLabelText('File');
+    fireEvent.change(input, { target: { files: [ 'some-file' ] } });
   }
 
   pressSubmitButton() {
-    this.component.find('#submitBtn').simulate('click');
+    fireEvent.click(this.submitButton());
   }
 
   tags() {
-    return this.component.find('input[name="tag"]')
-      .map(n => n.props().value);
+    return screen.getByRole("group", { name: 'Tag' });
   }
-
-  forceRender() {
-    this.component.update();
-  }
-}
-
-async function allowResolvedAsycOperationsToComplete() {
-  await new Promise(resolve => setTimeout(resolve, 0));
 }

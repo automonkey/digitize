@@ -5,7 +5,7 @@ import dropboxAccessToken from './dropboxAccessToken';
 jest.mock('dropbox');
 
 beforeAll(() => {
-  spyOn(dropboxAccessToken, 'getAccessToken').and.returnValue('some-fake-access-token');
+  dropboxAccessToken.setAccessToken("fake-access-token");
 });
 
 describe('uploadFile()', () => {
@@ -40,7 +40,7 @@ describe('uploadFile()', () => {
   });
 });
 
-describe('fetchTags()', async () => {
+describe('fetchTags()', () => {
   it('should fetch and filter top level folders', async () => {
 
     Dropbox.mockImplementation(() => {

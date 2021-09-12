@@ -45,9 +45,11 @@ class DocumentUploadComponent extends Component {
     }
 
     const tagSelections = this.state.tags.map(tag => {
+      const tagId = `${tag}-tag-selection`;
+      const labelId = `${tag}-tag-selection-label`;
       return [
-        <input type="radio" name="tag" key={tag} value={tag} onChange={this.tagSelected} />,
-        tag
+        <input id={tagId} type="radio" name="tag" key={tagId} value={tag} onChange={this.tagSelected} />,
+        <label htmlFor={tagId} key={labelId}>{tag}</label>
       ]
     });
 
@@ -55,9 +57,14 @@ class DocumentUploadComponent extends Component {
       <div className="DocumentUploadComponent">
         <form id="image-capture">
           <fieldset disabled={this.state.uploading}>
-            <input id="userSuppliedName" type="text" onChange={this.recordNameUpdated} value={this.state.recordName} />
-            <input id="fileSelection" type="file" accept="image/*;capture=camera" onChange={this.fileSelectionUpdated} />
-            {tagSelections}
+            <label htmlFor="userSuppliedName-input">Name</label>
+            <input id="userSuppliedName-input" type="text" onChange={this.recordNameUpdated} value={this.state.recordName} />
+            <label htmlFor="fileSelection-input">File</label>
+            <input id="fileSelection-input" type="file" accept="image/*;capture=camera" onChange={this.fileSelectionUpdated} />
+            <fieldset>
+              <legend>Tag</legend>
+              {tagSelections}
+            </fieldset>
             <button id="submitBtn" disabled={this.submitButtonShouldBeDisabled()} onClick={this.uploadClicked}>submit</button>
           </fieldset>
         </form>
