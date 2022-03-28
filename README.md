@@ -45,11 +45,9 @@ For all deploy jobs the environment variable `ENV` is used to determine where to
 
 ### Setup
 
-Running deploy scripts will require [Terraform](https://www.terraform.io/). For macOS, suggest installing with [homebrew](https://brew.sh/). For explicit version of Terraform used on CI see version downloaded in script `build-scripts/ci-install-terraform.sh`.
+Running deploy scripts will require [Terraform](https://www.terraform.io/). For macOS, suggest installing `tfenv` with [homebrew](https://brew.sh/).
 
-For instance:
-
-`brew install terraform`
+There is a `.terraform-version` file in the infra directory. You should use `tfenv install` and `tfenv use` to use the version defined in this file (this should be the same version as in `/build-scripts/ci-install-terraform.sh`).
 
 Deploy scripts also require the [AWS CLI](https://aws.amazon.com/cli/). Suggested way to install is with Python package from pip. Suggest installing in a [Python venv](https://docs.python.org/3/tutorial/venv.html) to create a dedicated operating environment for the project.
 
