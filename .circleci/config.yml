@@ -14,18 +14,6 @@ jobs:
           name: Tests
           command: ./build-scripts/test-app.sh
 
-  test-cert-rotator:
-    docker:
-      - image: circleci/python:3.8.1
-    steps:
-      - checkout
-      - run:
-          name: CI Setup
-          command: ./build-scripts/ci-setup-cert-rotator-tests.sh
-      - run:
-          name: Tests
-          command: ./build-scripts/test-cert-rotator.sh
-
   deploy-infra: &DEPLOY_INFRA
     docker:
       - image: buildpack-deps:trusty
@@ -50,30 +38,6 @@ jobs:
           name: Deploy app
           command: ./build-scripts/deploy-app.sh
 
-  generate-ssl-cert: &GENERATE_SSL_CERT
-    docker:
-      - image: circleci/python:3.8.1
-    steps:
-      - checkout
-      - run:
-          name: CI Setup
-          command: ./build-scripts/ci-setup-cert-gen.sh
-      - run:
-          name: Generate cert
-          command: ./build-scripts/generate-ssl-cert.sh
-
-  rotate-ssl-cert: &ROTATE_SSL_CERT
-      docker:
-        - image: circleci/python:3.8.1
-      steps:
-        - checkout
-        - run:
-            name: CI Setup
-            command: ./build-scripts/ci-setup-cert-rotation.sh
-        - run:
-            name: Rotate cert
-            command: ./build-scripts/rotate-ssl-cert.sh
-
   deploy-infra-dev:
     <<: *DEPLOY_INFRA
     environment:
@@ -94,37 +58,12 @@ jobs:
     environment:
       ENV: prod
 
-  cert-dev:
-    <<: *GENERATE_SSL_CERT
-    environment:
-      ENV: dev
-
-  rotate-cert-dev:
-      <<: *ROTATE_SSL_CERT
-      environment:
-        ENV: dev
-
-  cert-prod:
-    <<: *GENERATE_SSL_CERT
-    environment:
-      ENV: prod
-
-  rotate-cert-prod:
-    <<: *ROTATE_SSL_CERT
-    environment:
-      ENV: prod
-
 workflows:
   version: 2
   app:
     jobs:
 
       - test-app:
-          filters:
-            branches:
-              only: master
-
-      - test-cert-rotator:
           filters:
             branches:
               only: master
@@ -149,55 +88,3 @@ workflows:
       - deploy-app-prod:
           requires:
             - deploy-infra-prod
-  triggered-cert-rotation:
-    jobs:
-
-      - cert-dev-approval:
-          type: approval
-          filters:
-            branches:
-              only: master
-
-      - cert-dev:
-          requires:
-            - cert-dev-approval
-
-      - rotate-cert-dev:
-            requires:
-              - cert-dev
-
-      - cert-prod-approval:
-          type: approval
-          requires:
-            - rotate-cert-dev
-
-      - cert-prod:
-          requires:
-            - cert-prod-approval
-
-      - rotate-cert-prod:
-          requires:
-            - cert-prod
-
-  scheduled-cert-rotation:
-    triggers:
-      - schedule:
-          cron: "0 5 17 * *"
-          filters:
-            branches:
-              only: master
-    jobs:
-
-      - cert-dev
-
-      - rotate-cert-dev:
-          requires:
-            - cert-dev
-
-      - cert-prod:
-          requires:
-            - rotate-cert-dev
-
-      - rotate-cert-prod:
-          requires:
-            - cert-prod

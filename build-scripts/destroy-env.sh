@@ -30,8 +30,7 @@ AWS_DEPLOYMENT_BUCKET="io.benyon.digitize.$ENV.www"
 
     echo -e "\nDeleting infra..."
     terraform destroy \
-        -var "environment=$ENV" \
-        -var "latest_ssl_cert_arn="
+        -var "environment=$ENV"
 )
 
 echo -e "\nDeleting terraform state..."

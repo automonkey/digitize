@@ -63,28 +63,22 @@ Then, to enable that environment before running deploy scrips you can do:
 
 `source digitize-venv/bin/activate`
 
-### Step 1: Generate SSL Cert
+### Step 1: Update infra
 
-Requests SSL cert from certificate authority and uploads to AWS.
+Requires ACM SSL domain validation CNAME records to have been created prior to executing. The simplest way to generate the required DNS CNAME records is to manually create certificates for the domains and then create DNS values as requested in the console. These DNS records will remain the same for validating the certificates created in terraform, and so validation will continue to pass so long as the records exist.
 
-```bash
-[AWS_PROFILE=profile-name] [ENV=dev|prod] [GANDI_API_KEY=key] [GANDI_DNS_ZONE_ID=id] ./build-scripts/generate-ssl-cert.sh
-```
+You should create validation records for domains:
 
-GANDI\_API\_KEY: API Key for Gandi LiveDNS (authoritative name server).
-GANDI\_DNS\_ZONE\_ID: Id for zone containing digitize.benyon.io DNS zone entries.
+* www.dev.digitize.benyon.io
+* www.digitize.benyon.io
 
-### Step 2: Update infra
-
-Requires SSL cert has been generated using above step.
-
-Creates (and maintains) the AWS S3 bucket and infra required to host site.
+The infra project creates (and maintains) the AWS S3 bucket and infra required to host site.
 
 ```bash
 [AWS_PROFILE=profile-name] [ENV=dev|prod] ./build-scripts/deploy-infra.sh
 ```
 
-### Step 3: Deploy app
+### Step 2: Deploy app
 
 Creates a production build and uploads to S3 bucket.
 

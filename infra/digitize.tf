@@ -2,20 +2,26 @@ variable "environment" {
   type = "string"
 }
 
-variable "latest_ssl_cert_arn" {
-  type = "string"
+provider "aws" {
+  version = "~> 1.14"
+  region  = "eu-west-2"
 }
 
 provider "aws" {
   version = "~> 1.14"
-  region = "eu-west-2"
+  alias   = "us-east-1"
+  region  = "us-east-1"
 }
 
 terraform {
   backend "s3" {
-    key     = "digitize.tfstate"
-    region  = "eu-west-2"
+    key    = "digitize.tfstate"
+    region = "eu-west-2"
   }
+}
+
+locals {
+  site_url = "www.${var.environment != "prod" ? "${var.environment}." : ""}digitize.benyon.io"
 }
 
 resource "aws_s3_bucket" "web_bucket" {
@@ -49,8 +55,7 @@ EOF
 }
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
-
-  aliases = ["www.${var.environment != "prod" ? "${var.environment}." : ""}digitize.benyon.io"]
+  aliases = ["${local.site_url}"]
 
   origin {
     domain_name = "${aws_s3_bucket.web_bucket.bucket_domain_name}"
@@ -65,9 +70,10 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   is_ipv6_enabled     = true
   comment             = "${var.environment}.digitize.benyon.io web bucket distribution"
   default_root_object = "index.html"
+
   custom_error_response {
-    error_code = 404
-    response_code = 200
+    error_code         = 404
+    response_code      = 200
     response_page_path = "/index.html"
   }
 
@@ -99,12 +105,22 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   viewer_certificate {
-    acm_certificate_arn = "${var.latest_ssl_cert_arn}"
+    acm_certificate_arn      = "${aws_acm_certificate.tls_certificate.arn}"
     minimum_protocol_version = "TLSv1.2_2018"
-    ssl_support_method = "sni-only"
+    ssl_support_method       = "sni-only"
   }
 }
 
 resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
   comment = "${var.environment}.digitize.benyon.io origin access identity"
+}
+
+resource "aws_acm_certificate" "tls_certificate" {
+  provider          = "aws.us-east-1"
+  domain_name       = "${local.site_url}"
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
