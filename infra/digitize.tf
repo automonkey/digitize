@@ -34,7 +34,16 @@ resource "aws_s3_bucket" "web_bucket" {
 "Version": "2012-10-17",
 "Statement": [
   {
-    "Sid": "bucket_policy_site_main",
+    "Action": [
+      "s3:ListBucket"
+    ],
+    "Effect": "Allow",
+    "Resource": "arn:aws:s3:::io.benyon.digitize.${var.environment}.www",
+    "Principal": {
+      "AWS": "${aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn}"
+    }
+  },
+  {
     "Action": [
       "s3:GetObject"
     ],
