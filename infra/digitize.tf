@@ -1,14 +1,14 @@
 variable "environment" {
-  type = "string"
+  type = string
 }
 
 provider "aws" {
-  version = "~> 1.14"
+  version = "v2.70.0"
   region  = "eu-west-2"
 }
 
 provider "aws" {
-  version = "~> 1.14"
+  version = "v2.70.0"
   alias   = "us-east-1"
   region  = "us-east-1"
 }
@@ -67,11 +67,11 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   aliases = ["${local.site_url}"]
 
   origin {
-    domain_name = "${aws_s3_bucket.web_bucket.bucket_domain_name}"
+    domain_name = aws_s3_bucket.web_bucket.bucket_domain_name
     origin_id   = "io.benyon.digitize.${var.environment}"
 
     s3_origin_config {
-      origin_access_identity = "${aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path}"
+      origin_access_identity = aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path
     }
   }
 
@@ -114,7 +114,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = "${aws_acm_certificate.tls_certificate.arn}"
+    acm_certificate_arn      = aws_acm_certificate.tls_certificate.arn
     minimum_protocol_version = "TLSv1.2_2018"
     ssl_support_method       = "sni-only"
   }
@@ -125,8 +125,8 @@ resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
 }
 
 resource "aws_acm_certificate" "tls_certificate" {
-  provider          = "aws.us-east-1"
-  domain_name       = "${local.site_url}"
+  provider          = aws.us-east-1
+  domain_name       = local.site_url
   validation_method = "DNS"
 
   lifecycle {
