@@ -3,12 +3,10 @@ variable "environment" {
 }
 
 provider "aws" {
-  version = "~> 4.17.1"
   region  = "eu-west-2"
 }
 
 provider "aws" {
-  version = "~> 4.17.1"
   alias   = "us-east-1"
   region  = "us-east-1"
 }
