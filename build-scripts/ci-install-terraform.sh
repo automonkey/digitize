@@ -2,8 +2,8 @@
 
 set -eo pipefail
 
-TERRAFORM_ZIP_URL="https://releases.hashicorp.com/terraform/0.12.31/terraform_0.12.31_linux_amd64.zip"
-TERRAFORM_ZIP_SHA_256="e5eeba803bc7d8d0cae7ef04ba7c3541c0abd8f9e934a5e3297bf738b31c5c6d"
+TERRAFORM_ZIP_URL="https://releases.hashicorp.com/terraform/0.13.7/terraform_0.13.7_linux_amd64.zip"
+TERRAFORM_ZIP_SHA_256="4a52886e019b4fdad2439da5ff43388bbcc6cce9784fde32c53dcd0e28ca9957"
 
 echo -e "\n\n### Installing Terraform..."
 apt-get update

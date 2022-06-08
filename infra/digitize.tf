@@ -3,12 +3,12 @@ variable "environment" {
 }
 
 provider "aws" {
-  version = "v2.70.0"
+  version = "~> 4.17.1"
   region  = "eu-west-2"
 }
 
 provider "aws" {
-  version = "v2.70.0"
+  version = "~> 4.17.1"
   alias   = "us-east-1"
   region  = "us-east-1"
 }
@@ -26,45 +26,54 @@ locals {
 
 resource "aws_s3_bucket" "web_bucket" {
   bucket = "io.benyon.digitize.${var.environment}.www"
-  acl    = "private"
-
-  policy = <<EOF
-{
-"Id": "bucket_policy_site",
-"Version": "2012-10-17",
-"Statement": [
-  {
-    "Action": [
-      "s3:ListBucket"
-    ],
-    "Effect": "Allow",
-    "Resource": "arn:aws:s3:::io.benyon.digitize.${var.environment}.www",
-    "Principal": {
-      "AWS": "${aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn}"
-    }
-  },
-  {
-    "Action": [
-      "s3:GetObject"
-    ],
-    "Effect": "Allow",
-    "Resource": "arn:aws:s3:::io.benyon.digitize.${var.environment}.www/*",
-    "Principal": {
-      "AWS": "${aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn}"
-    }
-  }
-]
 }
-EOF
 
-  website {
-    index_document = "index.html"
-    error_document = "error.html"
+resource "aws_s3_bucket_acl" "example_bucket_acl" {
+  bucket = aws_s3_bucket.web_bucket.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_policy" "cloudfront_web_bucket_access_policy" {
+  bucket = aws_s3_bucket.web_bucket.id
+  policy = data.aws_iam_policy_document.cloudfront_web_bucket_access_doc.json
+}
+
+data "aws_iam_policy_document" "cloudfront_web_bucket_access_doc" {
+  policy_id = "bucket_policy_site"
+
+  statement {
+    principals {
+      type        = "AWS"
+      identifiers = [aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn]
+    }
+
+    actions = [
+      "s3:ListBucket",
+    ]
+
+    resources = [
+      aws_s3_bucket.web_bucket.arn
+    ]
+  }
+
+  statement {
+    principals {
+      type        = "AWS"
+      identifiers = [aws_cloudfront_origin_access_identity.origin_access_identity.iam_arn]
+    }
+
+    actions = [
+      "s3:GetObject"
+    ]
+
+    resources = [
+      "${aws_s3_bucket.web_bucket.arn}/*",
+    ]
   }
 }
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
-  aliases = ["${local.site_url}"]
+  aliases = [local.site_url]
 
   origin {
     domain_name = aws_s3_bucket.web_bucket.bucket_domain_name
