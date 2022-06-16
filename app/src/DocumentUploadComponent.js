@@ -53,9 +53,14 @@ class DocumentUploadComponent extends Component {
       ]
     });
 
+    const onSubmit = async event => {
+      event.preventDefault();
+      await this.uploadClicked();
+    };
+
     return (
       <div className="DocumentUploadComponent">
-        <form id="image-capture">
+        <form id="image-capture" onSubmit={onSubmit}>
           <fieldset disabled={this.state.uploading}>
             <label htmlFor="userSuppliedName-input">Name</label>
             <input id="userSuppliedName-input" type="text" onChange={this.recordNameUpdated} value={this.state.recordName} />
@@ -65,7 +70,7 @@ class DocumentUploadComponent extends Component {
               <legend>Tag</legend>
               {tagSelections}
             </fieldset>
-            <button id="submitBtn" disabled={this.submitButtonShouldBeDisabled()} onClick={this.uploadClicked}>submit</button>
+            <button id="submitBtn" disabled={this.submitButtonShouldBeDisabled()}>submit</button>
           </fieldset>
         </form>
       </div>
