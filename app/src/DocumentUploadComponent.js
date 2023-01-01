@@ -24,19 +24,25 @@ class DocumentUploadComponent extends Component {
       recordName: '',
       files: [],
       tags: [],
-      selectedTag: null
+      selectedTag: null,
+      requireLogin: !dropboxAccessToken.isSet()
     };
   }
 
   async componentWillMount() {
     if(dropboxAccessToken.isSet()) {
-      const tags = await this.dropboxUploadService.fetchTags();
-      this.setState({'tags': tags});
+      try {
+        const tags = await this.dropboxUploadService.fetchTags();
+        this.setState({'tags': tags});
+      }
+      catch(e) {
+        this.setState({'requireLogin': true});
+      }
     }
   }
 
   render() {
-    if(!dropboxAccessToken.isSet()) {
+    if(this.state.requireLogin) {
       return (
         <div>
           <Redirect to={paths.login}/>

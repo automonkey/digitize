@@ -1,12 +1,10 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { MemoryRouter } from 'react-router';
 import {render, screen, fireEvent, waitFor, getByLabelText} from '@testing-library/react'
 import '@testing-library/jest-dom';
-import DocumentUploadComponent from './DocumentUploadComponent';
 import dropboxAccessToken from './dropboxAccessToken';
-import paths from './paths';
 import DropboxUploadService from './DropboxUploadService';
+import {Routes} from "./routes";
 
 jest.mock('./DropboxUploadService');
 
@@ -69,6 +67,14 @@ describe('when access token is set', () => {
     expect(getByLabelText(tags, 'a-tag')).toBeVisible();
     expect(getByLabelText(tags, 'another-tag')).toBeVisible();
   });
+
+  describe('and fetch tags fails', () => {
+    it('should make user re-login', async () => {
+      testRunner.makeUploadServiceGiveErrorFetchingTags();
+      await testRunner.run();
+      expect(screen.getByText('login with Dropbox'));
+    })
+  })
 });
 
 
@@ -78,20 +84,18 @@ describe('when access token is not set', () => {
     dropboxAccessToken.clearAccessToken();
   });
 
-  it('should redirect to /login', () => {
-    const div = document.createElement('div');
+  let testRunner;
+  beforeEach(() => {
+    testRunner = new TestRunner();
+  });
 
-    const router = ReactDOM.render((
-      <MemoryRouter initialEntries={[ { pathname: paths.documentUpload } ]} >
-        <DocumentUploadComponent />
-      </MemoryRouter>
-    ), div);
+  it('should redirect to /login', async () => {
+    await testRunner.run();
 
-    expect(router.history.location.pathname).toBe(paths.login)
+    expect(screen.getByText('login with Dropbox'));
   });
 
   it('should not attempt to fetch tags', async () => {
-    let testRunner = new TestRunner();
     await testRunner.run();
 
     expect(testRunner.fetchTagsMock.mock.calls.length).toBe(0);
@@ -110,8 +114,14 @@ class TestRunner {
     this.fetchTagsMock.mockReturnValue(tags);
   }
 
+  makeUploadServiceGiveErrorFetchingTags() {
+    this.fetchTagsMock.mockImplementation(() => {
+      throw new Error();
+    });
+  }
+
   async run() {
-    render(<MemoryRouter><DocumentUploadComponent /></MemoryRouter>)
+    render(<MemoryRouter><Routes /></MemoryRouter>)
     this.component = new ComponentTester();
   }
 
