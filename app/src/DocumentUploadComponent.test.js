@@ -4,9 +4,13 @@ import {render, screen, fireEvent, waitFor, getByLabelText} from '@testing-libra
 import '@testing-library/jest-dom';
 import dropboxAccessToken from './dropboxAccessToken';
 import DropboxUploadService from './DropboxUploadService';
+import RecordNameGenerator from './RecordNameGenerator';
+import ImageScaler from './ImageScaler';
 import {Routes} from "./routes";
 
 jest.mock('./DropboxUploadService');
+jest.mock('./RecordNameGenerator');
+jest.mock('./ImageScaler');
 
 describe('when access token is set', () => {
 
@@ -59,6 +63,19 @@ describe('when access token is set', () => {
     await waitFor(() => expect(testRunner.component.submitButton()).toBeEnabled());
   });
 
+  it('should upload both scaled and full resolution versions', async () => {
+    await testRunner.run();
+
+    testRunner.component.setRecordName('test-record');
+    testRunner.component.selectFile();
+    testRunner.component.pressSubmitButton();
+    await testRunner.triggerUploadComplete();
+
+    await waitFor(() => expect(testRunner.uploadFileMock).toHaveBeenCalledTimes(2));
+    expect(testRunner.uploadFileMock).toHaveBeenCalledWith(expect.anything(), 'test-record.jpg', null);
+    expect(testRunner.uploadFileMock).toHaveBeenCalledWith(expect.anything(), 'test-record_fullRes.jpg', null);
+  });
+
   it('should display tags', async () => {
     testRunner.makeUploadServiceReturnTags(['a-tag', 'another-tag']);
     await testRunner.run();
@@ -108,6 +125,23 @@ class TestRunner {
     this.fetchTagsMock = jest.fn();
     this.fetchTagsMock.mockReturnValue(['some-tag', 'some-other-tag']);
     this.stubUploadService();
+    this.stubRecordNameGenerator();
+    this.stubImageScaler();
+  }
+
+  stubRecordNameGenerator() {
+    RecordNameGenerator.mockImplementation(() => ({
+      generate: (name) => ({
+        scaledImageFilename: name + '.jpg',
+        fullResImageFilename: name + '_fullRes.jpg'
+      })
+    }));
+  }
+
+  stubImageScaler() {
+    ImageScaler.mockImplementation(() => ({
+      scaleFile: (file) => Promise.resolve(file)
+    }));
   }
 
   makeUploadServiceReturnTags(tags) {
@@ -130,12 +164,15 @@ class TestRunner {
       this.triggerUploadCompleted = resolve;
     });
 
+    this.uploadFileMock = jest.fn().mockImplementation(async () => {
+      await fileUploadCompleted;
+    });
+
+    const uploadFileMock = this.uploadFileMock;
     DropboxUploadService.mockImplementation(() => {
       return {
         fetchTags: this.fetchTagsMock,
-        async uploadFile() {
-          await fileUploadCompleted;
-        }
+        uploadFile: uploadFileMock
       };
     });
   }
@@ -148,7 +185,7 @@ class TestRunner {
 class ComponentTester {
 
   submitButton() {
-    return screen.getByRole('button', { name: 'submit' });
+    return screen.getByRole('button', { name: /submit|processing|uploading/i });
   }
 
   setRecordName(name) {

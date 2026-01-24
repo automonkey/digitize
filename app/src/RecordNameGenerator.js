@@ -3,7 +3,11 @@ import moment from 'moment';
 class RecordNameGenerator {
   generate(userSuppliedName) {
     const date = moment().format('YYYY-MM-DD');
-    return `${date}__${userSuppliedName}.jpg`;
+    const baseName = `${date}__${userSuppliedName}`;
+    return {
+      scaledImageFilename: `${baseName}.jpg`,
+      fullResImageFilename: `${baseName}_fullRes.jpg`
+    };
   }
 }
 

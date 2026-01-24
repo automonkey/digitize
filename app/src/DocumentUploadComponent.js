@@ -5,6 +5,7 @@ import DropboxUploadService from './DropboxUploadService';
 import RecordNameGenerator from './RecordNameGenerator';
 import dropboxAccessToken from './dropboxAccessToken';
 import paths from './paths';
+import ImageScaler from './ImageScaler';
 
 class DocumentUploadComponent extends Component {
 
@@ -13,6 +14,7 @@ class DocumentUploadComponent extends Component {
 
     this.dropboxUploadService = new DropboxUploadService();
     this.recordNameGenerator = new RecordNameGenerator();
+    this.imageScaler = new ImageScaler();
     this.uploadClicked = this.uploadClicked.bind(this);
     this.recordNameUpdated = this.recordNameUpdated.bind(this);
     this.fileSelectionUpdated = this.fileSelectionUpdated.bind(this);
@@ -25,7 +27,8 @@ class DocumentUploadComponent extends Component {
       files: [],
       tags: [],
       selectedTag: null,
-      requireLogin: !dropboxAccessToken.isSet()
+      requireLogin: !dropboxAccessToken.isSet(),
+      processing: false
     };
   }
 
@@ -67,7 +70,7 @@ class DocumentUploadComponent extends Component {
     return (
       <div className="DocumentUploadComponent">
         <form id="image-capture" onSubmit={onSubmit}>
-          <fieldset disabled={this.state.uploading}>
+          <fieldset disabled={this.state.uploading || this.state.processing}>
             <label htmlFor="userSuppliedName-input">Name</label>
             <input id="userSuppliedName-input" type="text" onChange={this.recordNameUpdated} value={this.state.recordName} />
             <label htmlFor="fileSelection-input">File</label>
@@ -76,7 +79,9 @@ class DocumentUploadComponent extends Component {
               <legend>Tag</legend>
               {tagSelections}
             </fieldset>
-            <button id="submitBtn" disabled={this.submitButtonShouldBeDisabled()}>submit</button>
+            <button id="submitBtn" disabled={this.submitButtonShouldBeDisabled()}>
+              {this.state.processing ? 'Processing...' : this.state.uploading ? 'Uploading...' : 'submit'}
+            </button>
           </fieldset>
         </form>
       </div>
@@ -84,7 +89,7 @@ class DocumentUploadComponent extends Component {
   }
 
   submitButtonShouldBeDisabled() {
-    return !(this.state.recordName && this.state.files.length);
+    return !(this.state.recordName && this.state.files.length) || this.state.processing;
   }
 
   fileSelectionUpdated(e) {
@@ -100,16 +105,23 @@ class DocumentUploadComponent extends Component {
   }
 
   async uploadClicked() {
-    this.setState({'uploading': true});
-    const recordName = this.recordNameGenerator.generate(this.state.recordName);
+    this.setState({'processing': true});
+    const { scaledImageFilename, fullResImageFilename } = this.recordNameGenerator.generate(this.state.recordName);
 
     let uploaded = false;
     try {
-      await this.dropboxUploadService.uploadFile(this.state.files[0], recordName, this.state.selectedTag);
+      const originalFile = this.state.files[0];
+      const scaledFile = await this.imageScaler.scaleFile(originalFile);
+
+      this.setState({'processing': false, 'uploading': true});
+      await Promise.all([
+        this.dropboxUploadService.uploadFile(scaledFile, scaledImageFilename, this.state.selectedTag),
+        this.dropboxUploadService.uploadFile(originalFile, fullResImageFilename, this.state.selectedTag)
+      ]);
       uploaded = true;
     } catch (err) {
     }
-    this.setState({'uploading': false});
+    this.setState({'uploading': false, 'processing': false});
     console.log(`${uploaded ? "Uploaded" : "Failed to upload"} record '${this.state.recordName}'`)
   }
 }
