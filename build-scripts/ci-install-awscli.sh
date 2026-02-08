@@ -42,4 +42,4 @@ gpg --import awscliteam.pgp
 gpg --verify awscliv2.sig awscliv2.zip
 
 unzip awscliv2.zip
-sudo ./aws/install
+./aws/install
