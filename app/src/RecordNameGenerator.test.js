@@ -1,9 +1,10 @@
 import tk from 'timekeeper';
 import RecordNameGenerator from './RecordNameGenerator';
+import * as chai from 'chai';
+import chaiString from 'chai-string';
 
-const chai = require('chai');
-const expect = require('chai').expect;
-chai.use(require('chai-string'));
+const { expect } = chai;
+chai.use(chaiString);
 
 it('uses supplied name for scaled image', () => {
   const { scaledImageFilename } = new RecordNameGenerator().generate('somefile');

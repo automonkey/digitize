@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "chai": "^4.1.2",
-    "chai-string": "^1.4.0",
+    "chai": "^6.2.2",
+    "chai-string": "^2.0.0",
     "dropbox": "^10.34.0",
     "moment": "^2.20.1",
     "react": "^19.0.0",
