@@ -21,7 +21,7 @@
     "test": "vitest"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.0.0",
     "@vitejs/plugin-react": "^4.0.0",
     "jsdom": "^25.0.0",
