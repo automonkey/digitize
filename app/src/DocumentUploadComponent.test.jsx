@@ -8,6 +8,12 @@ import RecordNameGenerator from './RecordNameGenerator';
 import ImageScaler from './ImageScaler';
 import {AppRoutes} from "./routes";
 
+vi.mock('dropbox', () => ({
+  Dropbox: vi.fn(),
+  DropboxAuth: vi.fn(() => ({
+    getAuthenticationUrl: () => Promise.resolve('https://mock-auth-url')
+  }))
+}));
 vi.mock('./DropboxUploadService');
 vi.mock('./RecordNameGenerator');
 vi.mock('./ImageScaler');

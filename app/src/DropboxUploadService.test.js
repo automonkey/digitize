@@ -1,9 +1,12 @@
 import { vi } from 'vitest';
-import Dropbox from 'dropbox';
+import { Dropbox } from 'dropbox';
 import DropboxUploadService from './DropboxUploadService';
 import dropboxAccessToken from './dropboxAccessToken';
 
-vi.mock('dropbox');
+vi.mock('dropbox', () => ({
+  Dropbox: vi.fn(),
+  DropboxAuth: vi.fn()
+}));
 
 beforeAll(() => {
   dropboxAccessToken.setAccessToken("fake-access-token");
@@ -47,12 +50,14 @@ describe('fetchTags()', () => {
     Dropbox.mockImplementation(() => {
       return {
         filesListFolder: async function() {
-          return aDropboxFilesList()
-            .with(aDropboxFileRecord().withName('Bank').withType('folder').build())
-            .with(aDropboxFileRecord().withName('someFile').withType('file').build())
-            .with(aDropboxFileRecord().withName('anotherFolder').withType('folder').build())
-            .with(aDropboxFileRecord().withName('anotherFile').withType('file').build())
-            .build();
+          return {
+            result: aDropboxFilesList()
+              .with(aDropboxFileRecord().withName('Bank').withType('folder').build())
+              .with(aDropboxFileRecord().withName('someFile').withType('file').build())
+              .with(aDropboxFileRecord().withName('anotherFolder').withType('folder').build())
+              .with(aDropboxFileRecord().withName('anotherFile').withType('file').build())
+              .build()
+          };
         }
       };
     });

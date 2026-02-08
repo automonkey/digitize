@@ -1,4 +1,4 @@
-import Dropbox from 'dropbox';
+import { Dropbox } from 'dropbox';
 import dropboxAccessToken from './dropboxAccessToken';
 
 export default class DropboxUploadService {
@@ -20,7 +20,7 @@ export default class DropboxUploadService {
   async fetchTags() {
     try {
       let response = await this.dbx.filesListFolder({path: ''});
-      return response.entries
+      return response.result.entries
         .filter(item => item['.tag'] === 'folder')
         .map(item => item.name);
     } catch (err) {
