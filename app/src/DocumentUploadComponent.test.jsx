@@ -1,16 +1,16 @@
 import React from 'react';
-import { MemoryRouter } from 'react-router';
-import {render, screen, fireEvent, waitFor, getByLabelText} from '@testing-library/react'
-import '@testing-library/jest-dom';
+import { MemoryRouter } from 'react-router-dom';
+import {render, screen, fireEvent, waitFor, getByLabelText, act} from '@testing-library/react'
+import { vi } from 'vitest';
 import dropboxAccessToken from './dropboxAccessToken';
 import DropboxUploadService from './DropboxUploadService';
 import RecordNameGenerator from './RecordNameGenerator';
 import ImageScaler from './ImageScaler';
-import {Routes} from "./routes";
+import {AppRoutes} from "./routes";
 
-jest.mock('./DropboxUploadService');
-jest.mock('./RecordNameGenerator');
-jest.mock('./ImageScaler');
+vi.mock('./DropboxUploadService');
+vi.mock('./RecordNameGenerator');
+vi.mock('./ImageScaler');
 
 describe('when access token is set', () => {
 
@@ -32,22 +32,22 @@ describe('when access token is set', () => {
   it('should enable submit button only when record name entered and file selected', async () => {
     await testRunner.run();
 
-    testRunner.component.setRecordName('some-name');
+    await testRunner.component.setRecordName('some-name');
     expect(testRunner.component.submitButton()).toBeDisabled();
 
-    testRunner.component.selectFile();
+    await testRunner.component.selectFile();
     expect(testRunner.component.submitButton()).toBeEnabled();
 
-    testRunner.component.setRecordName('');
+    await testRunner.component.setRecordName('');
     expect(testRunner.component.submitButton()).toBeDisabled();
   });
 
   it('should disable submit button while uploading file', async () => {
     await testRunner.run();
 
-    testRunner.component.setRecordName('some-name');
-    testRunner.component.selectFile();
-    testRunner.component.pressSubmitButton();
+    await testRunner.component.setRecordName('some-name');
+    await testRunner.component.selectFile();
+    await testRunner.component.pressSubmitButton();
 
     expect(testRunner.component.submitButton()).toBeDisabled();
   });
@@ -55,9 +55,9 @@ describe('when access token is set', () => {
   it('should enable submit button when file upload completes', async () => {
     await testRunner.run();
 
-    testRunner.component.setRecordName('some-name');
-    testRunner.component.selectFile();
-    testRunner.component.pressSubmitButton();
+    await testRunner.component.setRecordName('some-name');
+    await testRunner.component.selectFile();
+    await testRunner.component.pressSubmitButton();
     await testRunner.triggerUploadComplete();
 
     await waitFor(() => expect(testRunner.component.submitButton()).toBeEnabled());
@@ -66,9 +66,9 @@ describe('when access token is set', () => {
   it('should upload both scaled and full resolution versions', async () => {
     await testRunner.run();
 
-    testRunner.component.setRecordName('test-record');
-    testRunner.component.selectFile();
-    testRunner.component.pressSubmitButton();
+    await testRunner.component.setRecordName('test-record');
+    await testRunner.component.selectFile();
+    await testRunner.component.pressSubmitButton();
     await testRunner.triggerUploadComplete();
 
     await waitFor(() => expect(testRunner.uploadFileMock).toHaveBeenCalledTimes(2));
@@ -80,9 +80,11 @@ describe('when access token is set', () => {
     testRunner.makeUploadServiceReturnTags(['a-tag', 'another-tag']);
     await testRunner.run();
 
-    const tags = testRunner.component.tags();
-    expect(getByLabelText(tags, 'a-tag')).toBeVisible();
-    expect(getByLabelText(tags, 'another-tag')).toBeVisible();
+    await waitFor(() => {
+      const tags = testRunner.component.tags();
+      expect(getByLabelText(tags, 'a-tag')).toBeVisible();
+      expect(getByLabelText(tags, 'another-tag')).toBeVisible();
+    });
   });
 
   describe('and fetch tags fails', () => {
@@ -122,7 +124,7 @@ describe('when access token is not set', () => {
 
 class TestRunner {
   constructor() {
-    this.fetchTagsMock = jest.fn();
+    this.fetchTagsMock = vi.fn();
     this.fetchTagsMock.mockReturnValue(['some-tag', 'some-other-tag']);
     this.stubUploadService();
     this.stubRecordNameGenerator();
@@ -155,7 +157,9 @@ class TestRunner {
   }
 
   async run() {
-    render(<MemoryRouter><Routes /></MemoryRouter>)
+    await act(async () => {
+      render(<MemoryRouter><AppRoutes /></MemoryRouter>);
+    });
     this.component = new ComponentTester();
   }
 
@@ -164,7 +168,7 @@ class TestRunner {
       this.triggerUploadCompleted = resolve;
     });
 
-    this.uploadFileMock = jest.fn().mockImplementation(async () => {
+    this.uploadFileMock = vi.fn().mockImplementation(async () => {
       await fileUploadCompleted;
     });
 
@@ -188,18 +192,24 @@ class ComponentTester {
     return screen.getByRole('button', { name: /submit|processing|uploading/i });
   }
 
-  setRecordName(name) {
+  async setRecordName(name) {
     const input = screen.getByLabelText('Name');
-    fireEvent.change(input, {target: {value: name}});
+    await act(async () => {
+      fireEvent.change(input, {target: {value: name}});
+    });
   }
 
-  selectFile() {
+  async selectFile() {
     const input = screen.getByLabelText('File');
-    fireEvent.change(input, { target: { files: [ 'some-file' ] } });
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [ 'some-file' ] } });
+    });
   }
 
-  pressSubmitButton() {
-    fireEvent.click(this.submitButton());
+  async pressSubmitButton() {
+    await act(async () => {
+      fireEvent.click(this.submitButton());
+    });
   }
 
   tags() {

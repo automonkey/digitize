@@ -1,8 +1,9 @@
+import { vi } from 'vitest';
 import Dropbox from 'dropbox';
 import DropboxUploadService from './DropboxUploadService';
 import dropboxAccessToken from './dropboxAccessToken';
 
-jest.mock('dropbox');
+vi.mock('dropbox');
 
 beforeAll(() => {
   dropboxAccessToken.setAccessToken("fake-access-token");
@@ -10,7 +11,7 @@ beforeAll(() => {
 
 describe('uploadFile()', () => {
 
-  let mockFn = jest.fn();
+  let mockFn = vi.fn();
   let uploadService = null;
   beforeAll(() => {
     Dropbox.mockImplementation(() => {

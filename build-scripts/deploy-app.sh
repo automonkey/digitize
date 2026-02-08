@@ -15,7 +15,7 @@ echo "Deploying to bucket '$AWS_DEPLOYMENT_BUCKET'"
     nvm install
     npm install
     npm run build
-    aws s3 sync build s3://$AWS_DEPLOYMENT_BUCKET --delete
+    aws s3 sync dist s3://$AWS_DEPLOYMENT_BUCKET --delete
 )
 
 CLOUDFRONT_ORIGIN_ID="io.benyon.digitize.${ENV}"
