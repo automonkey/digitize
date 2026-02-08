@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+export AWS_PAGER=""
+
 if [ -z ${ENV+x} ]; then
   echo "Warning: ENV not set. Defaulting to dev environment"
   ENV="dev"

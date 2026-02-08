@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+export AWS_PAGER=""
+
 if [ -z ${ENV+x} ]; then echo "ENV is unset"; exit 1; else echo "ENV is set ($ENV)"; fi
 
 TERRAFORM_STATE_BUCKET="io.benyon.digitize.$ENV.terraform"
