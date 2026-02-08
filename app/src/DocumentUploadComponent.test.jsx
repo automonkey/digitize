@@ -9,10 +9,12 @@ import ImageScaler from './ImageScaler';
 import {AppRoutes} from "./routes";
 
 vi.mock('dropbox', () => ({
-  Dropbox: vi.fn(),
-  DropboxAuth: vi.fn(() => ({
-    getAuthenticationUrl: () => Promise.resolve('https://mock-auth-url')
-  }))
+  Dropbox: vi.fn(function() {}),
+  DropboxAuth: vi.fn(function() {
+    return {
+      getAuthenticationUrl: () => Promise.resolve('https://mock-auth-url')
+    };
+  })
 }));
 vi.mock('./DropboxUploadService');
 vi.mock('./RecordNameGenerator');
@@ -138,18 +140,22 @@ class TestRunner {
   }
 
   stubRecordNameGenerator() {
-    RecordNameGenerator.mockImplementation(() => ({
-      generate: (name) => ({
-        scaledImageFilename: name + '.jpg',
-        fullResImageFilename: name + '_fullRes.jpg'
-      })
-    }));
+    RecordNameGenerator.mockImplementation(function() {
+      return {
+        generate: (name) => ({
+          scaledImageFilename: name + '.jpg',
+          fullResImageFilename: name + '_fullRes.jpg'
+        })
+      };
+    });
   }
 
   stubImageScaler() {
-    ImageScaler.mockImplementation(() => ({
-      scaleFile: (file) => Promise.resolve(file)
-    }));
+    ImageScaler.mockImplementation(function() {
+      return {
+        scaleFile: (file) => Promise.resolve(file)
+      };
+    });
   }
 
   makeUploadServiceReturnTags(tags) {
@@ -179,9 +185,10 @@ class TestRunner {
     });
 
     const uploadFileMock = this.uploadFileMock;
-    DropboxUploadService.mockImplementation(() => {
+    const fetchTagsMock = this.fetchTagsMock;
+    DropboxUploadService.mockImplementation(function() {
       return {
-        fetchTags: this.fetchTagsMock,
+        fetchTags: fetchTagsMock,
         uploadFile: uploadFileMock
       };
     });

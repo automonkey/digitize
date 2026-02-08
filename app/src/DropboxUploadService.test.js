@@ -4,8 +4,8 @@ import DropboxUploadService from './DropboxUploadService';
 import dropboxAccessToken from './dropboxAccessToken';
 
 vi.mock('dropbox', () => ({
-  Dropbox: vi.fn(),
-  DropboxAuth: vi.fn()
+  Dropbox: vi.fn(function() {}),
+  DropboxAuth: vi.fn(function() {})
 }));
 
 beforeAll(() => {
@@ -17,7 +17,7 @@ describe('uploadFile()', () => {
   let mockFn = vi.fn();
   let uploadService = null;
   beforeAll(() => {
-    Dropbox.mockImplementation(() => {
+    Dropbox.mockImplementation(function() {
       return {
         filesUpload: mockFn
       }
@@ -47,7 +47,7 @@ describe('uploadFile()', () => {
 describe('fetchTags()', () => {
   it('should fetch and filter top level folders', async () => {
 
-    Dropbox.mockImplementation(() => {
+    Dropbox.mockImplementation(function() {
       return {
         filesListFolder: async function() {
           return {
