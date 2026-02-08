@@ -4,7 +4,7 @@ jobs:
 
   test-app:
     docker:
-      - image: buildpack-deps:trusty
+      - image: buildpack-deps:noble
     steps:
       - checkout
       - run:
@@ -16,7 +16,7 @@ jobs:
 
   deploy-infra: &DEPLOY_INFRA
     docker:
-      - image: buildpack-deps:trusty
+      - image: buildpack-deps:noble
     steps:
       - checkout
       - run:
@@ -28,7 +28,7 @@ jobs:
 
   deploy-app: &DEPLOY_APP
     docker:
-      - image: buildpack-deps:trusty
+      - image: buildpack-deps:noble
     steps:
       - checkout
       - run:
