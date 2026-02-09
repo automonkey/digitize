@@ -60,6 +60,32 @@ describe('when access token is set', () => {
     expect(testRunner.component.submitButton()).toBeDisabled();
   });
 
+  it('should show success toast after upload completes', async () => {
+    await testRunner.run();
+
+    await testRunner.component.setRecordName('my-doc');
+    await testRunner.component.selectFile();
+    await testRunner.component.pressSubmitButton();
+    await testRunner.triggerUploadComplete();
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent("'my-doc' uploaded successfully");
+    });
+  });
+
+  it('should show error toast when upload fails', async () => {
+    testRunner.makeUploadFail();
+    await testRunner.run();
+
+    await testRunner.component.setRecordName('my-doc');
+    await testRunner.component.selectFile();
+    await testRunner.component.pressSubmitButton();
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent("Failed to upload 'my-doc'");
+    });
+  });
+
   it('should enable submit button when file upload completes', async () => {
     await testRunner.run();
 
@@ -160,6 +186,10 @@ class TestRunner {
 
   makeUploadServiceReturnTags(tags) {
     this.fetchTagsMock.mockReturnValue(tags);
+  }
+
+  makeUploadFail() {
+    this.uploadFileMock.mockRejectedValue(new Error('upload failed'));
   }
 
   makeUploadServiceGiveErrorFetchingTags() {
