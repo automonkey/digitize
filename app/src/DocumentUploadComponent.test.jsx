@@ -86,6 +86,17 @@ describe('when access token is set', () => {
     });
   });
 
+  it('should enable submit button when file upload fails', async () => {
+    testRunner.makeUploadFail();
+    await testRunner.run();
+
+    await testRunner.component.setRecordName('some-name');
+    await testRunner.component.selectFile();
+    await testRunner.component.pressSubmitButton();
+
+    await waitFor(() => expect(testRunner.component.submitButton()).toBeEnabled());
+  });
+
   it('should enable submit button when file upload completes', async () => {
     await testRunner.run();
 
