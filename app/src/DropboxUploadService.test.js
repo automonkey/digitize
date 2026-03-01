@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { Dropbox } from 'dropbox';
-import DropboxUploadService from './DropboxUploadService';
+import DropboxUploadService, { DropboxServiceError } from './DropboxUploadService';
 import dropboxAccessToken from './dropboxAccessToken';
 
 vi.mock('dropbox', () => ({
@@ -44,6 +44,30 @@ describe('uploadFile()', () => {
   });
 });
 
+describe('uploadFile() error handling', () => {
+  it('should call onAuthError when Dropbox returns 401', async () => {
+    const onAuthError = vi.fn();
+    Dropbox.mockImplementation(function() {
+      return { filesUpload: vi.fn().mockRejectedValue({ status: 401 }) };
+    });
+    const service = new DropboxUploadService(onAuthError);
+
+    await expect(service.uploadFile(null, 'file.jpg')).rejects.toThrow(DropboxServiceError);
+    expect(onAuthError).toHaveBeenCalled();
+  });
+
+  it('should not call onAuthError when Dropbox returns a non-401 error', async () => {
+    const onAuthError = vi.fn();
+    Dropbox.mockImplementation(function() {
+      return { filesUpload: vi.fn().mockRejectedValue({ status: 500 }) };
+    });
+    const service = new DropboxUploadService(onAuthError);
+
+    await expect(service.uploadFile(null, 'file.jpg')).rejects.toThrow(DropboxServiceError);
+    expect(onAuthError).not.toHaveBeenCalled();
+  });
+});
+
 describe('fetchTags()', () => {
   it('should fetch and filter top level folders', async () => {
 
@@ -66,6 +90,28 @@ describe('fetchTags()', () => {
     const tags = await uploadService.fetchTags();
 
     expect(tags).toEqual(expect.arrayContaining(['Bank', 'anotherFolder']));
+  });
+
+  it('should call onAuthError when Dropbox returns 401', async () => {
+    const onAuthError = vi.fn();
+    Dropbox.mockImplementation(function() {
+      return { filesListFolder: vi.fn().mockRejectedValue({ status: 401 }) };
+    });
+    const service = new DropboxUploadService(onAuthError);
+
+    await expect(service.fetchTags()).rejects.toThrow(DropboxServiceError);
+    expect(onAuthError).toHaveBeenCalled();
+  });
+
+  it('should not call onAuthError when Dropbox returns a non-401 error', async () => {
+    const onAuthError = vi.fn();
+    Dropbox.mockImplementation(function() {
+      return { filesListFolder: vi.fn().mockRejectedValue({ status: 500 }) };
+    });
+    const service = new DropboxUploadService(onAuthError);
+
+    await expect(service.fetchTags()).rejects.toThrow(DropboxServiceError);
+    expect(onAuthError).not.toHaveBeenCalled();
   });
 });
 

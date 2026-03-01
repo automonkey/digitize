@@ -7,6 +7,7 @@ import DropboxUploadService from './DropboxUploadService';
 import RecordNameGenerator from './RecordNameGenerator';
 import ImageScaler from './ImageScaler';
 import {AppRoutes} from "./routes";
+import {AuthProvider} from "./AuthContext";
 
 vi.mock('dropbox', () => ({
   Dropbox: vi.fn(function() {}),
@@ -132,13 +133,6 @@ describe('when access token is set', () => {
     });
   });
 
-  describe('and fetch tags fails', () => {
-    it('should make user re-login', async () => {
-      testRunner.makeUploadServiceGiveErrorFetchingTags();
-      await testRunner.run();
-      expect(screen.getByText('login with Dropbox'));
-    })
-  })
 });
 
 
@@ -156,7 +150,7 @@ describe('when access token is not set', () => {
   it('should redirect to /login', async () => {
     await testRunner.run();
 
-    expect(screen.getByText('login with Dropbox'));
+    expect(screen.getByText('login with Dropbox')).toBeVisible();
   });
 
   it('should not attempt to fetch tags', async () => {
@@ -170,7 +164,7 @@ describe('when access token is not set', () => {
 class TestRunner {
   constructor() {
     this.fetchTagsMock = vi.fn();
-    this.fetchTagsMock.mockReturnValue(['some-tag', 'some-other-tag']);
+    this.fetchTagsMock.mockResolvedValue(['some-tag', 'some-other-tag']);
     this.stubUploadService();
     this.stubRecordNameGenerator();
     this.stubImageScaler();
@@ -196,22 +190,16 @@ class TestRunner {
   }
 
   makeUploadServiceReturnTags(tags) {
-    this.fetchTagsMock.mockReturnValue(tags);
+    this.fetchTagsMock.mockResolvedValue(tags);
   }
 
   makeUploadFail() {
     this.uploadFileMock.mockRejectedValue(new Error('upload failed'));
   }
 
-  makeUploadServiceGiveErrorFetchingTags() {
-    this.fetchTagsMock.mockImplementation(() => {
-      throw new Error();
-    });
-  }
-
   async run() {
     await act(async () => {
-      render(<MemoryRouter><AppRoutes /></MemoryRouter>);
+      render(<MemoryRouter><AuthProvider><AppRoutes /></AuthProvider></MemoryRouter>);
     });
     this.component = new ComponentTester();
   }

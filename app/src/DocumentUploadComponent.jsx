@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import './DocumentUploadComponent.css';
 import Toast from './Toast';
-import DropboxUploadService from './DropboxUploadService';
+import { useDropboxService } from './AuthContext';
 import RecordNameGenerator from './RecordNameGenerator';
-import dropboxAccessToken from './dropboxAccessToken';
-import paths from './paths';
 import ImageScaler from './ImageScaler';
 
 const DocumentUploadComponent = () => {
-  const dropboxUploadService = useMemo(() => new DropboxUploadService(), []);
+  const dropboxUploadService = useDropboxService();
   const recordNameGenerator = useMemo(() => new RecordNameGenerator(), []);
   const imageScaler = useMemo(() => new ImageScaler(), []);
 
@@ -19,22 +16,11 @@ const DocumentUploadComponent = () => {
   const [files, setFiles] = useState([]);
   const [tags, setTags] = useState([]);
   const [selectedTag, setSelectedTag] = useState(null);
-  const [requireLogin, setRequireLogin] = useState(!dropboxAccessToken.isSet());
   const [processing, setProcessing] = useState(false);
   const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
-    const fetchTags = async () => {
-      if (dropboxAccessToken.isSet()) {
-        try {
-          const fetchedTags = await dropboxUploadService.fetchTags();
-          setTags(fetchedTags);
-        } catch (e) {
-          setRequireLogin(true);
-        }
-      }
-    };
-    fetchTags();
+    dropboxUploadService.fetchTags().then(setTags).catch(() => {});
   }, [dropboxUploadService]);
 
   const submitButtonShouldBeDisabled = useCallback(() => {
@@ -74,14 +60,6 @@ const DocumentUploadComponent = () => {
     setUploading(false);
     setProcessing(false);
   }, [recordName, files, selectedTag, recordNameGenerator, imageScaler, dropboxUploadService]);
-
-  if (requireLogin) {
-    return (
-      <div>
-        <Navigate to={paths.login} replace />
-      </div>
-    );
-  }
 
   const tagSelections = tags.map(tag => {
     const tagId = `${tag}-tag-selection`;
